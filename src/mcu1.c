@@ -1,7 +1,7 @@
-/*! @file main.c
+/*! @file mcu1.c
       @brief Main loop
     
-    Starting point of software
+    Starting point of software for MCU1
 */
 
 // #include <avr/io.h>
