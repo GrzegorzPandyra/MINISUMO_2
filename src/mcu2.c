@@ -1,38 +1,31 @@
 /*! @file mcu2.c
-      @brief Main loop
-    
+    @brief Main loop
     Starting point of software for MCU2
 */
 
-// #include <avr/io.h>
-// #include <util/delay.h>
-// #include "config.h"
-
 /* Local macro definitions */
-#define F_CPU 1000000L
-#define BAUD 2400
-#define MYUBRR F_CPU/16/BAUD-1
-#define FILE_ID "main.c"
+#define FILE_ID "mcu2.c"
+#define MCU2
 /* Local macro-like functions */
 /* Local static variables */
 /* Global variables */
 /* Local static functions */
 /* Global functions */
 
-// #define __AVR_ATmega8__
-
+#include "config.h"
 #include <stdint.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include "serial_interface.h"
-#include "serial_interrupts.h"
+#include "ISR.h"
+#include "iccm.h"
 
 /**
  * @brief Main function
  */ 
 int main(){
-    char data[] = "Hello from ATmega8";
+    char data[] = "Hello from MCU2";
     serial_init(F_CPU, BAUD);
     sei();
     int i = 0;
@@ -44,9 +37,10 @@ int main(){
         serial_send(FILE_ID, NOTIFY, data);
         _delay_ms(500);
         PORTB &= 0x00;
-            i++;
+        i++;
         _delay_ms(500);
-        PORTB |= 0x01;                          
+        PORTB |= 0x01;                    
+        iccm_receive();      
         // serial_read("qq");
     }
     return 0;

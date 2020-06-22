@@ -18,7 +18,7 @@
 #define FILE_ID "serial_if.c"
 #define MAX_UART_DATA_LENGTH 256
 #define MSG_SRC_LENGTH       10 
-#define NULL_CHAR            '\0'
+#define NULL '\0'
 
 /* Local macro-like functions */
 /* Local static variables */
@@ -38,7 +38,6 @@ void static serial_send_char(const unsigned char c)
     ;
     UDR = c;
 } 
-
 
 /* Global functions */
 /**
@@ -101,7 +100,7 @@ void serial_send(const char *src, Message_Type_T msg_type, const char *str)
     i = 0;
     
     /* print message data */
-    while( (*(str+i) != '\0') && (MAX_UART_DATA_LENGTH > i) )
+    while( (*(str+i) != NULL) && (MAX_UART_DATA_LENGTH > i) )
     {
         serial_send_char(*(str+i));
         i++;
@@ -116,7 +115,7 @@ void serial_send(const char *src, Message_Type_T msg_type, const char *str)
 void serial_read()
 {
     uint8_t i = 0;
-    while( NULL_CHAR != rx_buffer[i] )
+    while( NULL != rx_buffer[i] )
     {
         i++;
     }

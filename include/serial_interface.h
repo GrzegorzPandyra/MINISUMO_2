@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 /**
- * @brief Enum fro message type
+ * @brief Enum for message type
  * Describes the type of log being send.
  */
 typedef enum Message_Type_Tag{
@@ -24,10 +24,5 @@ void serial_init(uint32_t f_cpu, uint32_t baudrate);
 void serial_send(const char *src, Message_Type_T msg_type, const char *str);
 void serial_read();
 void serial_receive_char(const char c);
-
-
-
-
-
 
 #endif /* SERIAL_INTERFACE_GUARD */
