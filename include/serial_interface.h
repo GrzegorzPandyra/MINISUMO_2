@@ -21,8 +21,9 @@ typedef enum Message_Type_Tag{
 /* Global variables */
 /* Global functions */
 void serial_init(uint32_t f_cpu, uint32_t baudrate);
-void serial_send(const char *src, Message_Type_T msg_type, const char *str);
+void serial_log(const char *src, Message_Type_T msg_type, const char *str);
 void serial_read();
 void serial_receive_char(const char c);
+void serial_send_data(uint8_t size, void *data);
 
 #endif /* SERIAL_INTERFACE_GUARD */

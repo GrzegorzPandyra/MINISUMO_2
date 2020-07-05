@@ -22,7 +22,6 @@
 
 /* Local macro-like functions */
 /* Local static variables */
-static const char message_type_tags[3][8] = {"NOTIFY ", "WARNING", "ERROR  "};
 static char rx_buffer[MAX_UART_DATA_LENGTH] = {0};
 
 /* Global variables */
@@ -38,6 +37,58 @@ void static serial_send_char(const unsigned char c)
     ;
     UDR = c;
 } 
+
+/**
+ * @brief Prints log source
+ * Prints the name of the file where log has been created. Src string is based on __FILE__ attribute.
+ * @param src __FILE__ attribute of file where message originated from
+ */
+static void serial_print_msg_src(const char *src)
+{
+    uint8_t i = 0;
+    while(*(src+i) != '\0' && i < MSG_SRC_LENGTH)
+    {
+        serial_send_char(*(src+i));
+        i++;
+    }
+    while(i < MSG_SRC_LENGTH)
+    {
+        serial_send_char(' ');
+        i++;
+    }
+    serial_send_char(' ');
+}
+
+/**
+ * @brief Prints message type
+ * Prints whether given log is INFO, WARNING or an ERROR
+ * @param msg_type Enum indicating the type
+ */
+static void serial_print_msg_type(Message_Type_T msg_type)
+{
+    const char msg_type_str[3][8] = {"INFO   ", "WARNING", "ERROR  "};
+    uint8_t i = 0;
+    while( msg_type_str[(uint8_t)msg_type][i] != '\0')
+    {
+        serial_send_char(msg_type_str[(uint8_t)msg_type][i]);
+        i++;
+    }
+}
+
+/**
+ * @brief Print message data
+ * Iterates over data until NULL-terminator is found or MAX_UART_DATA_LENGTH characters are printed.
+ * @param data Data (string) to be send
+ */
+static void serial_print_msg_data(const char *data)
+{
+    uint8_t i = 0;
+    while( (*(data+i) != '\0') && (MAX_UART_DATA_LENGTH > i) )
+    {
+        serial_send_char(*(data+i));
+        i++;
+    }
+}
 
 /* Global functions */
 /**
@@ -61,50 +112,22 @@ void serial_receive_char(const char c)
     }
     
 }
-
 /**
  * @brief Send string str via serial
  * Prints logs formatted as below:
  * main.c     NOTIFY  Hello from ATmega8
  * <source>  <log type>  <Log data (string)>
- * Function runs through arguments until it finds '\0' character and fills neccesarry spaces to achieve given format.
+ * Function calls subfunctions to print parts of the log + adds formatting characters
  * @param str       String to be send. Must be null-terminated
  * @param msg_type  Label describing what kind of log str is. Can be NOTIFY, WARNING or ERROR
  * @param src       String describing source of message, typically a file
  */
-void serial_send(const char *src, Message_Type_T msg_type, const char *str)
+void serial_log(const char *src, Message_Type_T msg_type, const char *str)
 {
-    uint8_t i = 0;
-
-    /* Print message source */
-    while( *(src+i) != '\0')
-    {
-        serial_send_char(*(src+i));
-        i++;
-    }
-    while( i < MSG_SRC_LENGTH)
-    {
-        serial_send_char(' ');
-        i++;
-    }
+    serial_print_msg_src(src);
+    serial_print_msg_type(msg_type);
     serial_send_char(' ');
-    i = 0;
-
-    /* print message type */
-    while( message_type_tags[(uint8_t)msg_type][i] != '\0')
-    {
-        serial_send_char(message_type_tags[(uint8_t)msg_type][i]);
-        i++;
-    }
-    serial_send_char(' ');
-    i = 0;
-    
-    /* print message data */
-    while( (*(str+i) != NULL) && (MAX_UART_DATA_LENGTH > i) )
-    {
-        serial_send_char(*(str+i));
-        i++;
-    }
+    serial_print_msg_data(str);
     serial_send_char('\n');
 }
 
@@ -119,10 +142,25 @@ void serial_read()
     {
         i++;
     }
-    serial_send(FILE_ID, WARNING, rx_buffer);
+    serial_log(__FILE__, WARNING, rx_buffer);
     //do something with data in rx_buffer
 } 
 
+/**
+ * @brief Send variable amount of data
+ * Data pointer is later casted to char ptr, and data is transmitted as chars
+ * @param size Number of bytes to send
+ * @param data Data to be send
+ */
+void serial_send_data(uint8_t size, void *data)
+{
+    uint8_t i = 0;
+    while(i < size)
+    {
+        serial_send_char(*((char*)(data+i)));
+        i++;
+    }
+}
 /**
  * @brief UART initialization
  * Function writes to appropriate registers to enable communication over UART. Frame format is 8data, 2stop bit.
