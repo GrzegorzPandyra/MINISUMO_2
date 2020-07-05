@@ -122,7 +122,7 @@ void serial_receive_char(const char c)
  * @param msg_type  Label describing what kind of log str is. Can be NOTIFY, WARNING or ERROR
  * @param src       String describing source of message, typically a file
  */
-void serial_send(const char *src, Message_Type_T msg_type, const char *str)
+void serial_log(const char *src, Message_Type_T msg_type, const char *str)
 {
     serial_print_msg_src(src);
     serial_print_msg_type(msg_type);
@@ -142,7 +142,7 @@ void serial_read()
     {
         i++;
     }
-    serial_send(__FILE__, WARNING, rx_buffer);
+    serial_log(__FILE__, WARNING, rx_buffer);
     //do something with data in rx_buffer
 } 
 
@@ -167,4 +167,20 @@ void serial_init(uint32_t f_cpu, uint32_t baudrate)
 
     /* Enable Rx interrupt */
     UCSRB |= (1<<RXCIE);
+}
+
+/**
+ * @brief Send variable amount of data
+ * Data pointer is later casted to char ptr, and data is transmitted as chars
+ * @param size Number of bytes to send
+ * @param data Data to be send
+ */
+void serial_send_data(uint8_t size, void *data)
+{
+    uint8_t i = 0;
+    while(i < size)
+    {
+        serial_send_char(*((char*)(data+i)));
+        i++;
+    }
 }
