@@ -37,7 +37,7 @@ ISR(INT0_vect)
     for(i = 0; i < 8; i++)
     {
         c |= (PINB & (1<<SW_RX))<<i;
-        serial_send("ISR.h", WARNING, "bit received");
+        serial_log("ISR.h", WARNING, "bit received");
         _delay_ms(50);
     }
     _delay_ms(50);

@@ -15,7 +15,6 @@
 #include <avr/io.h>
 
 /* Local macro definitions */
-#define FILE_ID "serial_if.c"
 #define MAX_UART_DATA_LENGTH 256
 #define MSG_SRC_LENGTH       10 
 #define NULL '\0'
