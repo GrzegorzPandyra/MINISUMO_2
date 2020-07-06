@@ -64,7 +64,7 @@ void iccm_send(char *str)
         for(j = 0; j < (ICCM_START_BIT+ICCM_DATA_SIZE+ICCM_NUM_STOP_BITS); j++)
         {
             PORTD = (1>>frame.raw_frame) & 0x01; 
-            serial_log(__FILE__, NOTIFY, str+i);
+            serial_info(str+i);
             _delay_ms(ICCM_TX_DELAY);
         }
     }
@@ -82,14 +82,14 @@ uint8_t iccm_receive_char(char c)
     uint8_t result = 0;
     if(*rx_buffer_ptr == rx_buffer[ICCM_RX_BUFFER_LENGTH-1])
     {
-        serial_log(__FILE__, WARNING, "ICCM RX BUFFER OVERFLOW");
+        serial_warn("ICCM RX BUFFER OVERFLOW");
     } 
     else 
     {
         *rx_buffer_ptr = c;
         rx_buffer_ptr++;
         result = 1;
-        serial_log(__FILE__, NOTIFY, rx_buffer_ptr-1);
+        serial_info( rx_buffer_ptr-1);
     }
     return result;
 }
@@ -99,7 +99,7 @@ void iccm_receive()
     if(rx_complete_flag)
     {
         rx_buffer_ptr = rx_buffer;
-        serial_log(__FILE__, NOTIFY, rx_buffer_ptr);
+        serial_info( rx_buffer_ptr);
         rx_buffer_ptr = NULL;
         iccm_set_rx_complete_flag(0);
     }
@@ -108,7 +108,7 @@ void iccm_receive()
 void iccm_set_rx_complete_flag(uint8_t value)
 {
     rx_complete_flag = value;
-    serial_log(__FILE__, NOTIFY, "rx flag changed");
+    serial_info("rx flag changed");
 }
 
 

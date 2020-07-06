@@ -16,32 +16,24 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
-#include "iccm.h"
 #include "serial_interface.h"
 #include "ISR.h"
+#include "iccm.h"
 
 /**
  * @brief Main function
  */ 
 int main(){
-    char str[] = "Hello from MCU1";
-    char str2[] = "G";
+    char data[] = "Hello from MCU1";
     serial_init(F_CPU, BAUD);
     sei();
-    int i = 0;
     DDRB |= 0x01;
 
     while(1) /* Loop the messsage continously */
     { 
-        i = 0;
-        serial_log(__FILE__, NOTIFY, str);
-        iccm_send(str2);
-        _delay_ms(500);
-        PORTB &= 0x00;
-        i++;
-        _delay_ms(500);
-        PORTB |= 0x01;                          
-        // serial_read("qq");
+        serial_info(data);
+        _delay_ms(1000);
+        iccm_receive();      
     }
     return 0;
 }
