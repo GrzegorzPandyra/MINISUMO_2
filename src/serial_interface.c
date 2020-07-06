@@ -13,11 +13,15 @@
 */
 #include "serial_interface.h"
 #include <avr/io.h>
+#include <stdlib.h>
 
 /* Local macro definitions */
+#define FILE_ID "serial_if.c"
 #define MAX_UART_DATA_LENGTH 256
 #define MSG_SRC_LENGTH       10 
-#define NULL '\0'
+#define DECIMAL              10
+#define NULL_CHAR            '\0'   
+#define UINT32_MAX_DIGITS    10
 
 /* Local macro-like functions */
 /* Local static variables */
@@ -45,7 +49,7 @@ void static serial_send_char(const unsigned char c)
 static void serial_print_msg_src(const char *src)
 {
     uint8_t i = 0;
-    while(*(src+i) != '\0' && i < MSG_SRC_LENGTH)
+    while(*(src+i) != NULL_CHAR && i < MSG_SRC_LENGTH)
     {
         serial_send_char(*(src+i));
         i++;
@@ -55,7 +59,6 @@ static void serial_print_msg_src(const char *src)
         serial_send_char(' ');
         i++;
     }
-    serial_send_char(' ');
 }
 
 /**
@@ -65,9 +68,9 @@ static void serial_print_msg_src(const char *src)
  */
 static void serial_print_msg_type(Message_Type_T msg_type)
 {
-    const char msg_type_str[3][8] = {"INFO   ", "WARNING", "ERROR  "};
+    const char msg_type_str[3][8] = {"INFO", "WARNING", "ERROR"};
     uint8_t i = 0;
-    while( msg_type_str[(uint8_t)msg_type][i] != '\0')
+    while( msg_type_str[(uint8_t)msg_type][i] != NULL_CHAR)
     {
         serial_send_char(msg_type_str[(uint8_t)msg_type][i]);
         i++;
@@ -82,10 +85,26 @@ static void serial_print_msg_type(Message_Type_T msg_type)
 static void serial_print_msg_data(const char *data)
 {
     uint8_t i = 0;
-    while( (*(data+i) != '\0') && (MAX_UART_DATA_LENGTH > i) )
+    while( (*(data+i) != NULL_CHAR) && (MAX_UART_DATA_LENGTH > i) )
     {
         serial_send_char(*(data+i));
         i++;
+    }
+}
+
+/**
+ * @brief Print line number
+ * Converts @line_num to string and sends via serial. buff size takes into account NULL-terminator, but it is not send. 
+ * @param line_num line number based on __LINE__ attribute
+ */
+static void serial_print_line_number(const uint32_t line_num)
+{
+    char buff[UINT32_MAX_DIGITS+1] = {NULL_CHAR};
+    uint8_t i;
+    itoa(line_num, buff, DECIMAL);
+    for(i = 0; buff != NULL && i < UINT32_MAX_DIGITS; i++)
+    {
+        serial_send_char(buff[i]);
     }
 }
 
@@ -98,9 +117,9 @@ static void serial_print_msg_data(const char *data)
 void serial_receive_char(const char c)
 {
     static char *rx_buffer_ptr = rx_buffer;
-    if('\n' == c)
+    if(c == NULL_CHAR)
     {
-        *rx_buffer_ptr = '\0';   
+        *rx_buffer_ptr = NULL_CHAR;   
         rx_buffer_ptr = rx_buffer;
         serial_read();
     }
@@ -111,19 +130,24 @@ void serial_receive_char(const char c)
     }
     
 }
+
 /**
  * @brief Send string str via serial
  * Prints logs formatted as below:
- * main.c     NOTIFY  Hello from ATmega8
- * <source>  <log type>  <Log data (string)>
+ * main.c  :  44      NOTIFY    Hello from ATmega8
+ * <source> <line>  <log type>  <Log data (string)>
  * Function calls subfunctions to print parts of the log + adds formatting characters
  * @param str       String to be send. Must be null-terminated
  * @param msg_type  Label describing what kind of log str is. Can be NOTIFY, WARNING or ERROR
- * @param src       String describing source of message, typically a file
+ * @param file      String describing source of message, typically a file
+ * @param line      Line in source file identifing the log
  */
-void serial_log(const char *src, Message_Type_T msg_type, const char *str)
+void serial_log(const char *file, const uint8_t line, Message_Type_T msg_type, const char *str)
 {
-    serial_print_msg_src(src);
+    serial_print_msg_src(file);
+    serial_send_char(':');
+    serial_print_line_number(line);
+    serial_send_char(' ');
     serial_print_msg_type(msg_type);
     serial_send_char(' ');
     serial_print_msg_data(str);
@@ -137,29 +161,14 @@ void serial_log(const char *src, Message_Type_T msg_type, const char *str)
 void serial_read()
 {
     uint8_t i = 0;
-    while( NULL != rx_buffer[i] )
+    while(rx_buffer[i] != NULL_CHAR)
     {
         i++;
     }
-    serial_log(__FILE__, WARNING, rx_buffer);
+    serial_log(__FILE__, __LINE__, WARNING, rx_buffer);
     //do something with data in rx_buffer
 } 
 
-/**
- * @brief Send variable amount of data
- * Data pointer is later casted to char ptr, and data is transmitted as chars
- * @param size Number of bytes to send
- * @param data Data to be send
- */
-void serial_send_data(uint8_t size, void *data)
-{
-    uint8_t i = 0;
-    while(i < size)
-    {
-        serial_send_char(*((char*)(data+i)));
-        i++;
-    }
-}
 /**
  * @brief UART initialization
  * Function writes to appropriate registers to enable communication over UART. Frame format is 8data, 2stop bit.
@@ -181,4 +190,20 @@ void serial_init(uint32_t f_cpu, uint32_t baudrate)
 
     /* Enable Rx interrupt */
     UCSRB |= (1<<RXCIE);
+}
+
+/**
+ * @brief Send variable amount of data
+ * Data pointer is later casted to char ptr, and data is transmitted as chars
+ * @param size Number of bytes to send
+ * @param data Data to be send
+ */
+void serial_send_data(uint8_t size, void *data)
+{
+    uint8_t i = 0;
+    while(i < size)
+    {
+        serial_send_char(*((char*)(data+i)));
+        i++;
+    }
 }
