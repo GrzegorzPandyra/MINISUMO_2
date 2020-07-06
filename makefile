@@ -5,7 +5,6 @@
 #folders
 INC_DIR=include
 OUT_DIR=out
-OBJ_DIR=$(OUT_DIR)/obj
 LIB_DIR=lib
 SRC_DIR=src
 
@@ -21,42 +20,63 @@ CFLAGS=-I $(INC_DIR) -Wall -Os
 # $@		Target file
 # $< 		First prerequisite - here %.c
 
-#dependency list
-DEPS = config.h
-
 #source files list
-SRC_LIST = $(SRC_DIR)/main.c \
-		   $(SRC_DIR)/serial_interface.c \
+MCU1_SRC_LIST = $(SRC_DIR)/mcu1.c \
+		   		$(SRC_DIR)/serial_interface.c \
+		   		$(SRC_DIR)/iccm.c \
+
+MCU2_SRC_LIST = $(SRC_DIR)/mcu2.c \
+		   		$(SRC_DIR)/serial_interface.c \
+		   		$(SRC_DIR)/iccm.c \
 
 #make all rule
-all: minisumo_2.elf minisumo_2.hex
-	@echo '******                             ******'
-	@echo '****  Finished building all targets  ****'
-	@echo '******                             ******'
+all: minisumo2_mcu1.elf minisumo2_mcu1.hex minisumo2_mcu2.elf minisumo2_mcu2.hex
+	@echo '\t\t\t\t******                             ******'
+	@echo '\t\t\t\t****  Finished building all targets  ****'
+	@echo '\t\t\t\t******                             ******'
 
-#compile project into .elf file
-minisumo_2.elf: 
+#compile project mcu1 into .elf file
+minisumo2_mcu1.elf: 
+	@echo ' ********************************************************************************************************* '
 	@echo 'Building target: $@.. '
-	@echo ' '
-	@echo ' ********************************************************************************************************* '
-	$(CC) $(SRC_LIST) $(CFLAGS) -mmcu=$(MMCU) -o $(OUT_DIR)/$@
-	@echo ' ********************************************************************************************************* '
-	@echo ' '
+	$(CC) $(MCU1_SRC_LIST) $(CFLAGS) -mmcu=$(MMCU) -o $(OUT_DIR)/$@
 	@echo 'Finished building target: $@'
+	@echo ' ********************************************************************************************************* '
+	@echo ' '
+
+#compile project mcu2 into .elf file
+minisumo2_mcu2.elf: 
+	@echo ' ********************************************************************************************************* '
+	@echo 'Building target: $@.. '
+	$(CC) $(MCU2_SRC_LIST) $(CFLAGS) -mmcu=$(MMCU) -o $(OUT_DIR)/$@
+	@echo 'Finished building target: $@'
+	@echo ' ********************************************************************************************************* '
 	@echo ' '
 
 #convert .elf file into flashable .hex
-minisumo_2.hex: minisumo_2.elf
+minisumo2_mcu1.hex: minisumo2_mcu1.elf
+	@echo ' ********************************************************************************************************* '
 	@echo 'Create Flash image (ihex format)'
 	-avr-objcopy -R .eeprom -R .fuse -R .lock -R .signature -O ihex $(OUT_DIR)/$< $(OUT_DIR)/$@
 	@echo 'Finished building: $@'
+	@echo ' ********************************************************************************************************* '
+	@echo ' '
+
+#convert .elf file into flashable .hex
+minisumo2_mcu2.hex: minisumo2_mcu2.elf
+	@echo ' ********************************************************************************************************* '
+	@echo 'Create Flash image (ihex format)'
+	-avr-objcopy -R .eeprom -R .fuse -R .lock -R .signature -O ihex $(OUT_DIR)/$< $(OUT_DIR)/$@
+	@echo 'Finished building: $@'
+	@echo ' ********************************************************************************************************* '
 	@echo ' '
 
 #make clean
 clean:
-	@rm -f $(OBJ_DIR)/*.o minisumo_2
-	@rm -f $(OUT_DIR)/minisumo_2.elf
-	@rm -f $(OUT_DIR)/minisumo_2.hex
+	@rm -f $(OUT_DIR)/minisumo2_mcu1.elf
+	@rm -f $(OUT_DIR)/minisumo2_mcu1.hex
+	@rm -f $(OUT_DIR)/minisumo2_mcu2.elf
+	@rm -f $(OUT_DIR)/minisumo2_mcu2.hex
 	@echo '### Clean finished! ###'
 	@echo ' '
 
