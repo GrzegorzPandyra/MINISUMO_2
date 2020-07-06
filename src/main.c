@@ -41,7 +41,7 @@ int main(){
     while(1) /* Loop the messsage continously */
     { 
         i = 0;
-        serial_send(FILE_ID, NOTIFY, data);
+        serial_info(data);
         _delay_ms(500);
         PORTB &= 0x00;
             i++;
