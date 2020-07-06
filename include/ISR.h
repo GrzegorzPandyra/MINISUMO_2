@@ -36,7 +36,7 @@ ISR(INT0_vect)
     char c = 0;
     for(i = 0; i < 8; i++)
     {
-        c |= (PINB & (1<<SW_RX))<<i;
+        c |= (PINB & (1<<ICCM_RX))<<i;
         serial_warn("bit received");
         _delay_ms(50);
     }
@@ -62,7 +62,7 @@ ISR(INT1_vect)
     char c = 0;
     for(i = 0; i < 8; i++)
     {
-        c |= (PINB & (1<<SW_RX))<<i;
+        c |= (PINB & (1<<ICCM_RX))<<i;
         _delay_ms(50);
     }
     _delay_ms(50);

@@ -7,11 +7,11 @@
 #define MYUBRR F_CPU/16/BAUD-1
 
 #if defined MCU1
-    #define SW_RX 4
-    #define SW_TX 5
+    #define ICCM_RX 4
+    #define ICCM_TX 5
 #elif defined MCU2
-    #define SW_RX 5
-    #define SW_TX 4
+    #define ICCM_RX 5
+    #define ICCM_TX 4
 #endif
 
 #endif /* CONFIG_GUARD */

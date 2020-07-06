@@ -11,6 +11,7 @@
 #define ICCM_RX_BUFFER_LENGTH 20
 #define ICCM_TX_DELAY 50
 #define NULL 0
+#define NEXT_BIT 1
 /* Local macro-like functions */
 #define SB(x) (1<<(x))          //set bit
 #define CB(x) (~(1<<(x)))       //clear bit
@@ -21,6 +22,43 @@ static char *rx_buffer_ptr = rx_buffer;
 static uint8_t rx_complete_flag = 0;
 /* Global variables */
 /* Local static functions */
+static ICCM_DataFrame_T iccm_pack(char c)
+{
+    ICCM_DataFrame_T frame;
+    frame.raw_frame = 0;
+    frame.struct_frame.start_bit = ICCM_START_BIT;
+    frame.struct_frame.data = (uint8_t)c;
+    frame.struct_frame.start_bit = ICCM_STOP_BIT;
+    serial_log(__FILE__, INFO, "packing frame");
+    return frame;
+
+}
+
+static void iccm_transmit(ICCM_DataFrame_T frame)
+{
+    uint8_t current_bit;
+    serial_log(__FILE__, INFO, "transmitting");
+    while (frame.raw_frame != 0)
+    {
+        current_bit = frame.raw_frame & 0x0001;
+        if(current_bit)
+        {
+            PORTB |= current_bit;
+            serial_log(__FILE__, INFO, "bit set");
+        } 
+        else
+        {
+            PORTB &= current_bit;
+            serial_log(__FILE__, INFO, "bit cleared");
+        }
+        frame.raw_frame = frame.raw_frame>>NEXT_BIT;
+        _delay_ms(50);
+        serial_send_data(1, &current_bit);
+    }
+       
+}
+
+
 /* Global functions */
 
 /**
@@ -51,25 +89,15 @@ void iccm_init(uint8_t rx_pin, uint8_t tx_pin, uint8_t baudrate)
  */
 void iccm_send(char *str)
 {
+    uint8_t cnt;
     ICCM_DataFrame_T frame;
-    uint8_t i,j;
-    frame.struct_frame.start_bit = 1;
-    frame.struct_frame.stop_bits = 3; //that's 11b
-    //iterate over str, char by char
-    for(i = 0; *(str+i) != '\0' && i < ICCM_MAX_DATA_LENGTH; i++)
+    serial_log(__FILE__, INFO, str);
+    for(cnt = 0; *str != NULL && cnt < ICCM_MAX_DATA_LENGTH; cnt++, str++)
     {
-        //put char into data frame
-        frame.struct_frame.data = *(str+i);
-        //iterate bit-by-bit through frame
-        for(j = 0; j < (ICCM_START_BIT+ICCM_DATA_SIZE+ICCM_NUM_STOP_BITS); j++)
-        {
-            PORTD = (1>>frame.raw_frame) & 0x01; 
-            serial_info(str+i);
-            _delay_ms(ICCM_TX_DELAY);
+        frame = iccm_pack(*str);
+        iccm_transmit(frame);
         }
     }
-    PORTD &= CB(iccm_register.tx_pin);
-}
 
 /**
  * @brief Stores single char in rx_buffer

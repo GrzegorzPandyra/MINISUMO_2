@@ -7,7 +7,7 @@
 /* Local macro definitions */
 #define ICCM_START_BIT 1
 #define ICCM_DATA_SIZE 8
-#define ICCM_NUM_STOP_BITS 2
+#define ICCM_STOP_BIT  1
 #define ICCM_MAX_DATA_LENGTH 20
 /* Local macro-like functions */
 /* Local static variables */
@@ -26,7 +26,7 @@ typedef union ICCM_DataFrame_Tag
     {
         uint8_t start_bit : ICCM_START_BIT;
         uint8_t data      : ICCM_DATA_SIZE;
-        uint8_t stop_bits : ICCM_NUM_STOP_BITS;
+        uint8_t stop_bits : ICCM_STOP_BIT;
     } 
     struct_frame;
 } ICCM_DataFrame_T;
