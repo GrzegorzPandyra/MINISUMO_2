@@ -27,13 +27,18 @@ int main(){
     char data[] = "Hello from MCU1";
     serial_init(F_CPU, BAUD);
     sei();
-    DDRB |= 0x01;
+    DDRB |= PB0;
+    iccm_init(ICCM_RX, ICCM_TX, 0);
 
     while(1) /* Loop the messsage continously */
     { 
+        // PORTD |= 1<<ICCM_TX;      
         serial_info(data);
         _delay_ms(1000);
-        iccm_receive();      
+        // iccm_receive();
+        // PORTD &= ~(1<<ICCM_TX);
+        // _delay_ms(1000);
+        // iccm_receive();      
     }
     return 0;
 }
