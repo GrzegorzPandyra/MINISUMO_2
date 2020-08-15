@@ -16,6 +16,7 @@
 #include <avr/io.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 /* Local macro definitions */
 #define MAX_UART_DATA_LENGTH 300
@@ -72,20 +73,42 @@ static void serial_process_char(const unsigned char c){
 } 
 
 /**
+ * @brief Parses path, looking for last '/' character, then treats the rest as filename. 
+ * Function tracks filename length and keeps it at max value MSG_SRC_LENGTH
+ * @param filename output buffer for filename
+ * @param path     path to be parsed (from __FILE__ attribute)
+ */
+static void get_filename_from_path(char *filename, const char *path){
+    const char *last_slash = path;
+    uint8_t filename_length = 0;
+
+    while(*path != NULL_CHAR){
+        if(*path == SLASH_CHAR){
+            last_slash = path;
+            filename_length = 0;
+        } else {
+            filename_length++;
+        }
+        path++;
+    }
+    if(filename_length > MSG_SRC_LENGTH){
+        filename_length = MSG_SRC_LENGTH;
+    }
+    memcpy(filename, last_slash+1, filename_length);
+}
+
+/**
  * @brief Prints log source
  * Prints the name of the file where log has been created. Src string is based on __FILE__ attribute.
  * @param src __FILE__ attribute of file where message originated from
  */
 static void serial_print_msg_src(const char *src){
     uint8_t i = 0;
+    char filename[MSG_SRC_LENGTH];
 
-    while(*(src+i) != NULL_CHAR && i < MSG_SRC_LENGTH){
-        serial_process_char(*(src+i));
-        i++;
-    }
-    while(i < MSG_SRC_LENGTH){
-        serial_process_char(SPACE_CHAR);
-        i++;
+    get_filename_from_path(filename, src);
+    for(i = 0; i < MSG_SRC_LENGTH; i++){
+        serial_process_char(filename[i]);
     }
 }
 
