@@ -18,7 +18,7 @@
 #include <stdio.h>
 
 /* Local macro definitions */
-#define MAX_UART_DATA_LENGTH 256
+#define MAX_UART_DATA_LENGTH 300
 #define MSG_SRC_LENGTH       10 
 #define DECIMAL              10
 #define UINT32_MAX_DIGITS    10
@@ -26,18 +26,49 @@
 /* Local macro-like functions */
 /* Local static variables */
 static char rx_buffer[MAX_UART_DATA_LENGTH] = {0};
+static char tx_buffer[MAX_UART_DATA_LENGTH] = {0};
+static char *tx_buffer_head = tx_buffer;
+static Data_Target_T data_destination = T_UDR;
 
 /* Global variables */
 /* Local static functions */
+
 /**
- * @brief Sends a single char over uart
- * Writes a single character to UDR, effectively sending it over uart. 
- * @param c Character to be send
+ * @brief Moves character 'c' into UDR (USART Data Register), which equals to sending via UART/USART
+ * @param c character to be stored
  */
-void static serial_send_char(const unsigned char c){
+static void serial_to_udr(const unsigned char c){
     while ( !( UCSRA & (1<<UDRE)) )
     ;
     UDR = c;
+}
+
+/**
+ * @brief Stores character 'c' in TX buffer
+ * @param c character to be stored
+ */
+static void serial_to_tx_buffer(const char c){
+    *tx_buffer_head = c;
+    tx_buffer_head++;
+}
+/**
+ * @brief Directs character 'c' into current data destination (UDR or TX_BUFFER)
+ * @param c character to be send
+ */
+static void serial_process_char(const unsigned char c){
+    switch(data_destination){
+        case T_UDR:
+            serial_to_udr(c);
+            break;
+        case T_TX_BUFFER:
+            if(!serial_is_tx_buffer_full()){
+                serial_to_tx_buffer(c);
+            } 
+            break;
+        default:
+            /*None*/
+            break;
+    }
 } 
 
 /**
@@ -49,11 +80,11 @@ static void serial_print_msg_src(const char *src){
     uint8_t i = 0;
 
     while(*(src+i) != NULL_CHAR && i < MSG_SRC_LENGTH){
-        serial_send_char(*(src+i));
+        serial_process_char(*(src+i));
         i++;
     }
     while(i < MSG_SRC_LENGTH){
-        serial_send_char(SPACE_CHAR);
+        serial_process_char(SPACE_CHAR);
         i++;
     }
 }
@@ -68,7 +99,7 @@ static void serial_print_msg_type(Log_Type_T msg_type){
     uint8_t i = 0;
 
     while( msg_type_str[(uint8_t)msg_type][i] != NULL_CHAR){
-        serial_send_char(msg_type_str[(uint8_t)msg_type][i]);
+        serial_process_char(msg_type_str[(uint8_t)msg_type][i]);
         i++;
     }
 }
@@ -82,7 +113,7 @@ static void serial_print_msg_data(const char *data){
     uint8_t i = 0;
 
     while( (*(data+i) != NULL_CHAR) && (MAX_UART_DATA_LENGTH > i) ){
-        serial_send_char(*(data+i));
+        serial_process_char(*(data+i));
         i++;
     }
 }
@@ -98,8 +129,19 @@ static void serial_print_line_number(const uint32_t line_num){
 
     itoa(line_num, buff, DECIMAL);
     for(i = 0; buff != NULL && i < UINT32_MAX_DIGITS; i++){
-        serial_send_char(buff[i]);
+        serial_process_char(buff[i]);
     }
+}
+
+/**
+ * @brief Handler for TX_BUFFER overflow. This function disables data buffering to show error. 
+ * NEWLINE_CHAR compensates for missing newline character from unfinished log.
+ */
+static void serial_show_tx_buffer_overflow_error(void){
+    serial_disable_buffering();
+    serial_to_udr(NEWLINE_CHAR);
+    serial_err("TX buffer overflow!");
+    serial_enable_buffering();
 }
 
 /* Global functions */
@@ -135,13 +177,13 @@ void serial_receive_char(const char c){
  */
 void serial_log(const Log_Metadata_T metadata, const char *str){
     serial_print_msg_src(metadata.filename);
-    serial_send_char(COLON_CHAR);
+    serial_process_char(COLON_CHAR);
     serial_print_line_number(metadata.line_num);
-    serial_send_char(SPACE_CHAR);
+    serial_process_char(SPACE_CHAR);
     serial_print_msg_type(metadata.log_type);
-    serial_send_char(SPACE_CHAR);
+    serial_process_char(SPACE_CHAR);
     serial_print_msg_data(str);
-    serial_send_char(NEWLINE_CHAR);
+    serial_process_char(NEWLINE_CHAR);
 }
 
 
@@ -196,15 +238,55 @@ void serial_log_data(Data_T data)
             case INT:
                 sprintf(buff, "%d", *( (int*)data.data + i) );
                 serial_print_msg_data(buff);
-                serial_send_char(NEWLINE_CHAR);
+                serial_process_char(NEWLINE_CHAR);
                 buff[0] = NULL_CHAR;
                 break;
             case STRING:
-                serial_send_char( *( (char*)data.data + i) );
+                serial_process_char( *( (char*)data.data + i) );
                 break;
             default:
                 /*Do nothing*/
                 break;
         }
     }
+}
+
+/**
+ * @brief Enable data buffering
+ */
+void serial_enable_buffering(void){
+    data_destination = T_TX_BUFFER;
+}
+
+/**
+ * @brief Disable data buffering
+ */
+void serial_disable_buffering(void){
+    data_destination = T_UDR;
+}
+
+/**
+ * @brief Moves content of TX_BUFFER into UDR until current position of tx_buffer_head is not found.
+ * Prints additional log if buffer overflow occured, then moves tx_buffer_head to the begining of TX_BUFFER
+ * which is considered as clearing the buffer
+ */
+void serial_read_tx_buffer(void){
+    char *tx_buffer_read_ptr = tx_buffer;
+
+    while(tx_buffer_read_ptr <= tx_buffer_head){
+        serial_to_udr(*tx_buffer_read_ptr++);
+    }
+
+    if(serial_is_tx_buffer_full()){
+        serial_show_tx_buffer_overflow_error();
+    }
+
+    tx_buffer_head = tx_buffer;
+}
+
+/**
+ * @brief Returns if tx buffer is full
+ */
+bool serial_is_tx_buffer_full(void){
+    return (tx_buffer_head >= tx_buffer+MAX_UART_DATA_LENGTH);
 }
