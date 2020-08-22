@@ -1,6 +1,8 @@
 /** @file serial_interface.c
 *   @brief Implementation of serial communication 
 *   Source file implementing communication between MCU and PC.
+*   @TODO add \n for sending data, change order of args in serial send data,
+*   delete serial_log_data reference
 *   
 *   TX operation
 *   To send data over UART use serial_send(src,type,str) function. Str must be a null-terminated string. 
@@ -256,6 +258,10 @@ void serial_log_data(Data_T data)
     uint8_t i = 0;
     char buff[UINT32_MAX_DIGITS] = {0};
 
+    for(i = 0; i<19; i++){
+        serial_send_char(SPACE_CHAR);
+    }
+
     for(i = 0; i<data.data_length && i<MAX_UART_DATA_LENGTH; i++){
         switch(data.data_type){
             case INT:
@@ -272,6 +278,7 @@ void serial_log_data(Data_T data)
                 break;
         }
     }
+    serial_send_char(NEWLINE_CHAR);
 }
 
 /**

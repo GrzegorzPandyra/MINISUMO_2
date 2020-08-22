@@ -30,22 +30,48 @@ ISR(USART_RXC_vect)
  * This function is doubled, since on each MCU different pin is used for interrupt.
  */
 ISR(INT0_vect){
-    // uint8_t i;
+    uint8_t i;
 
+    // cli();
     // PORTB |= 1<<PB0;
-    serial_warn("INT0 triggered");
-    // _delay_ms(50);
-    // char c = 0;
-    // for(i = 0; i < 8; i++)
-    // {
-    //     c |= (PIND & (1<<ICCM_RX))<<i;
-    //     serial_warn("bit received");
-    //     _delay_ms(50);
+    // GICR &= ~(1<<INT0);
+    // _delay_ms(200);
+    char c = 0;
+    uint8_t q = 0;
+    uint8_t d = 0;
+    _delay_ms(200);
+    for(i = 0; i < 8; i++){
+        c |= (PIND & (1<<ICCM_RX))<<i;
+        q = (PIND & (1<<ICCM_RX));
+        // serial_warn("bit received");
+        // serial_data_int(&i, 1);
+        if(q != 0){
+            serial_warn(" 1");
+            d++;
+        } else {
+            serial_warn(" 0");
+        }
+        q = 0;
+        _delay_ms(200);
+    }
+    // if(d==0){
+    // serial_data_str(&c, 1);
     // }
+    if(d==3){
+        serial_warn("ok");
+        serial_data_str(&c, 1);
+    }
+    // _delay_ms(1000);
+    // serial_warn("INT0 triggered");
+    // serial_data_str(&c, 1);
+    // GICR |= 1<<INT0;
+    // sei();
+    // serial_info("read character:");
+    // serial_data_str(&c, 1);
     // _delay_ms(1000);
     // iccm_receive_char(c);
-    // if(c == NULL){
-    //     iccm_set_rx_complete_flag(1);
+    // if(c == '\0'){
+        // iccm_set_rx_complete_flag(1);
     // }
     // PORTB &= ~(1<<PB0);
 }

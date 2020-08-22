@@ -8,5 +8,6 @@
 
 #define ICCM_RX PD2
 #define ICCM_TX PD3
+#define ICCM_DELAY 50
 
 #endif /* CONFIG_GUARD */

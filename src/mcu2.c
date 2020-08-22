@@ -24,20 +24,21 @@
  * @brief Main function
  */ 
 int main(){
-    char data[] = "Hello from MCU2";
-    serial_init(F_CPU, BAUD);
     sei();
-    DDRB |= 0x01;
-    iccm_init(ICCM_RX, ICCM_TX, 0);
+    serial_init(F_CPU, BAUD);
+    iccm_init();
+    
+    // char data[] = "Hello from MCU2";
 
     while(1) /* Loop the messsage continously */
     { 
-        PORTD |= 1<<ICCM_TX;      
-        serial_info(data);
-        _delay_ms(1000);
-        iccm_receive();
-        PORTD &= ~(1<<ICCM_TX);
-        _delay_ms(1000);
+        // PORTD |= 1<<ICCM_TX;      
+        // serial_info(data);
+        // iccm_send("Ala ma kota xDDD 123456789\0");
+        iccm_send("123456\0");
+        _delay_ms(3000);
+        // PORTD &= ~(1<<ICCM_TX);
+        // _delay_ms(1000);
     }
     return 0;
 }
