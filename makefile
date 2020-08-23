@@ -11,7 +11,7 @@ SRC_DIR=src
 #compiler
 CC=avr-gcc
 MMCU=atmega8
-CFLAGS=-I $(INC_DIR) -Wall -Os
+CFLAGS=-I $(INC_DIR) -Wall -Os -std=c99
 
 # [target]:[prerequisites]
 #	[recipe]
