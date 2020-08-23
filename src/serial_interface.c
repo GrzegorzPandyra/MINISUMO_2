@@ -22,9 +22,10 @@
 
 /* Local macro definitions */
 #define MAX_UART_DATA_LENGTH 300
-#define MSG_SRC_LENGTH       10 
+#define MSG_SRC_LENGTH       8
 #define DECIMAL              10
 #define UINT32_MAX_DIGITS    10
+#define OMIT_SLASH 1
 
 /* Local macro-like functions */
 /* Local static variables */
@@ -81,12 +82,12 @@ static void serial_process_char(const unsigned char c){
  * @param path     path to be parsed (from __FILE__ attribute)
  */
 static void get_filename_from_path(char *filename, const char *path){
-    const char *last_slash = path;
+    const char *last_slash_ptr = path;
     uint8_t filename_length = 0;
 
     while(*path != NULL_CHAR){
         if(*path == SLASH_CHAR){
-            last_slash = path;
+            last_slash_ptr = path;
             filename_length = 0;
         } else {
             filename_length++;
@@ -96,7 +97,7 @@ static void get_filename_from_path(char *filename, const char *path){
     if(filename_length > MSG_SRC_LENGTH){
         filename_length = MSG_SRC_LENGTH;
     }
-    memcpy(filename, last_slash+1, filename_length);
+    memcpy(filename, last_slash_ptr+OMIT_SLASH, filename_length);
 }
 
 /**
@@ -105,11 +106,10 @@ static void get_filename_from_path(char *filename, const char *path){
  * @param src __FILE__ attribute of file where message originated from
  */
 static void serial_print_msg_src(const char *src){
-    uint8_t i = 0;
-    char filename[MSG_SRC_LENGTH];
+    char filename[MSG_SRC_LENGTH] = {"        "};
 
     get_filename_from_path(filename, src);
-    for(i = 0; i < MSG_SRC_LENGTH; i++){
+    for(uint8_t i = 0; i < MSG_SRC_LENGTH; i++){
         serial_process_char(filename[i]);
     }
 }
@@ -120,7 +120,7 @@ static void serial_print_msg_src(const char *src){
  * @param msg_type Enum indicating the type
  */
 static void serial_print_msg_type(Log_Type_T msg_type){
-    const char msg_type_str[3][8] = {"INFO", "WARNING", "ERROR"};
+    const char msg_type_str[4][8] = {"INFO", "WARNING", "ERROR", "DATA"};
     uint8_t i = 0;
 
     while( msg_type_str[(uint8_t)msg_type][i] != NULL_CHAR){
@@ -150,10 +150,9 @@ static void serial_print_msg_data(const char *data){
  */
 static void serial_print_line_number(const uint32_t line_num){
     char buff[UINT32_MAX_DIGITS+1] = {NULL_CHAR};
-    uint8_t i;
 
     itoa(line_num, buff, DECIMAL);
-    for(i = 0; buff != NULL && i < UINT32_MAX_DIGITS; i++){
+    for(uint8_t i = 0; buff != NULL && i < UINT32_MAX_DIGITS; i++){
         serial_process_char(buff[i]);
     }
 }
@@ -196,7 +195,7 @@ void serial_receive_char(const char c){
  * <source> <line>  <log type>  <Log data (string)>
  * Function calls subfunctions to print parts of the log + adds formatting characters
  * @param str       String to be send. Must be null-terminated
- * @param msg_type  Label describing what kind of log str is. Can be NOTIFY, WARNING or ERROR
+ * @param msg_type  Label describing what kind of log str is. Can be NOTIFY, WARNING, ERROR or DATA
  * @param file      String describing source of message, typically a file
  * @param line      Line in source file identifing the log
  */
@@ -208,7 +207,9 @@ void serial_log(const Log_Metadata_T metadata, const char *str){
     serial_print_msg_type(metadata.log_type);
     serial_process_char(SPACE_CHAR);
     serial_print_msg_data(str);
-    serial_process_char(NEWLINE_CHAR);
+    if(metadata.log_type != DATA){
+        serial_process_char(NEWLINE_CHAR);
+    }
 }
 
 
@@ -216,7 +217,7 @@ void serial_log(const Log_Metadata_T metadata, const char *str){
  * @brief TODO
  * 
  */
-void serial_read(){
+void serial_read(void){
     uint8_t i = 0;
 
     while(rx_buffer[i] != NULL_CHAR){
@@ -246,28 +247,32 @@ void serial_init(uint32_t f_cpu, uint32_t baudrate){
 
     /* Enable Rx interrupt */
     UCSRB |= (1<<RXCIE);
+    
+    /* Clear INT0 flag */
+    GIFR |= 1<<INTF0;
 }
 
 /**
  * @brief Send variable amount of raw data
- * Sends data under data.data pointer as a series if integers or characters
+ * Sends data under data.data pointer as a series if integers or characters. Function cuts into normal operation of serial_log()
+ * and prints data between str and final newline character
  * @param data Structure containing data to be send
  */
-void serial_log_data(Data_T data)
+void serial_log_data(const Log_Metadata_T metadata, const char *str, Data_T data)
 {
-    uint8_t i = 0;
+    serial_log(metadata, str);
+    serial_process_char(SPACE_CHAR);
     char buff[UINT32_MAX_DIGITS] = {0};
-
-    for(i = 0; i<19; i++){
-        serial_send_char(SPACE_CHAR);
-    }
-
-    for(i = 0; i<data.data_length && i<MAX_UART_DATA_LENGTH; i++){
+    for(uint8_t i = 0; i<data.data_length && i<MAX_UART_DATA_LENGTH; i++){
         switch(data.data_type){
             case INT:
                 sprintf(buff, "%d", *( (int*)data.data + i) );
                 serial_print_msg_data(buff);
-                serial_process_char(NEWLINE_CHAR);
+                buff[0] = NULL_CHAR;
+                break;
+            case UINT8:
+                sprintf(buff, "%d", *( (uint8_t*)data.data + i) );
+                serial_print_msg_data(buff);
                 buff[0] = NULL_CHAR;
                 break;
             case STRING:
@@ -278,7 +283,7 @@ void serial_log_data(Data_T data)
                 break;
         }
     }
-    serial_send_char(NEWLINE_CHAR);
+    serial_process_char(NEWLINE_CHAR);
 }
 
 /**
@@ -301,17 +306,19 @@ void serial_disable_buffering(void){
  * which is considered as clearing the buffer
  */
 void serial_read_tx_buffer(void){
-    char *tx_buffer_read_ptr = tx_buffer;
+    if(tx_buffer_head != tx_buffer){
+        char *tx_buffer_read_ptr = tx_buffer;
 
-    while(tx_buffer_read_ptr <= tx_buffer_head){
-        serial_to_udr(*tx_buffer_read_ptr++);
+        while(tx_buffer_read_ptr <= tx_buffer_head){
+            serial_to_udr(*tx_buffer_read_ptr++);
+        }
+
+        if(serial_is_tx_buffer_full()){
+            serial_show_tx_buffer_overflow_error();
+        }
+
+        tx_buffer_head = tx_buffer;
     }
-
-    if(serial_is_tx_buffer_full()){
-        serial_show_tx_buffer_overflow_error();
-    }
-
-    tx_buffer_head = tx_buffer;
 }
 
 /**

@@ -14,7 +14,8 @@
 typedef enum Log_Type_Tag{
     INFO = 0,
     WARNING = 1,
-    ERROR = 2
+    ERROR = 2,
+    DATA = 3
 } Log_Type_T;
 
 /**
@@ -23,7 +24,8 @@ typedef enum Log_Type_Tag{
 typedef enum Message_Data_Type_Tag{
     STRING = 0,
     INT = 1,
-    HEX = 2
+    HEX = 2,
+    UINT8 = 3
 } Message_Data_Type_T;
 
 /**
@@ -54,16 +56,19 @@ typedef enum Data_Target_Tag{
 } Data_Target_T;
 
 /* Local macro-like functions */
-#define serial_info(str) (serial_log( (Log_Metadata_T){__FILE__, __LINE__, INFO}, str ))
-#define serial_warn(str) (serial_log( (Log_Metadata_T){__FILE__, __LINE__, WARNING}, str ))
-#define serial_err(str)  (serial_log( (Log_Metadata_T){__FILE__, __LINE__, ERROR}, str ))
-#define serial_data_int(data, data_length) (serial_log_data( (Data_T){data, data_length, INT} ))
-#define serial_data_str(data, data_length) (serial_log_data( (Data_T){data, data_length, STRING} ))
+#define METADATA(type) (Log_Metadata_T){__FILE__, __LINE__, type}
+#define serial_info(str) (serial_log( METADATA(INFO), str ))
+#define serial_warn(str) (serial_log( METADATA(WARNING), str ))
+#define serial_err(str)  (serial_log( METADATA(ERROR), str ))
+#define serial_data_int(str, data, data_length) (serial_log_data( METADATA(DATA), str, (Data_T){data, data_length, INT} ))
+#define serial_data_uint8(str, data, data_length) (serial_log_data( METADATA(DATA), str, (Data_T){data, data_length, UINT8} ))
+#define serial_data_str(str, data, data_length) (serial_log_data( METADATA(DATA), str, (Data_T){data, data_length, STRING} ))
+
 /* Global variables */
 /* Global functions */
 void serial_init(uint32_t f_cpu, uint32_t baudrate);
 void serial_log(const Log_Metadata_T metadata, const char *str);
-void serial_log_data(Data_T data);
+void serial_log_data(const Log_Metadata_T metadata, const char *str, Data_T data);
 void serial_read(void);
 void serial_receive_char(const char c);
 void serial_send_data(uint8_t size, void *data);
