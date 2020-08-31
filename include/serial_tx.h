@@ -1,7 +1,7 @@
-#ifndef SERIAL_INTERFACE_GUARD
-#define SERIAL_INTERFACE_GUARD
+#ifndef SERIAL_TX_GUARD
+#define SERIAL_TX_GUARD
 
-/*! @file serial_interface.h
+/*! @file serial_tx.h
     @brief API for serial communication
     Interface file for other components to access serial communication between MCU and PC. 
 */
@@ -69,11 +69,9 @@ typedef enum Data_Target_Tag{
 void serial_init(uint32_t f_cpu, uint32_t baudrate);
 void serial_log(const Log_Metadata_T metadata, const char *str);
 void serial_log_data(const Log_Metadata_T metadata, const char *str, Data_T data);
-void serial_read(void);
-void serial_receive_char(const char c);
-void serial_send_data(uint8_t size, void *data);
 bool serial_is_tx_buffer_full(void);
-void serial_read_tx_buffer(void);
 void serial_disable_buffering(void);
 void serial_enable_buffering(void);
-#endif /* SERIAL_INTERFACE_GUARD */
+void serial_read_tx_buffer(void);
+void serial_clear_tx_buffer(void);
+#endif /* SERIAL_TX_GUARD */
