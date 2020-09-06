@@ -6,21 +6,19 @@
     This file needs to be included in file with "main" function. ISRs are kept separated here for the purpose of clarity. 
 */
 
-#include "serial_interface.h"
+#include "serial_tx.h"
+#include "serial_rx.h"
 #include "iccm.h"
 
 #define NULL 0
 
 /**
  * @brief Interrupt routine for USART receive complete bit
- * Reads a single character from UDR and calls function to store character c in rx_buffer
+ * Reads a single character from UDR and calls function handle this data
  */
-ISR(USART_RXC_vect)
-{
-    char c; 
-    c = UDR;
-    UDR = c;
-    serial_receive_char(c);
+ISR(USART_RXC_vect){
+    char c = (char)UDR;
+    serial_on_receive(c);
 }
 
 /**
@@ -75,4 +73,5 @@ ISR(INT0_vect){
     // }
     // PORTB &= ~(1<<PB0);
 }
+
 #endif /* ISR_GUARD */

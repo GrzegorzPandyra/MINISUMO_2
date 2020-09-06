@@ -16,7 +16,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
-#include "serial_interface.h"
+#include "serial_tx.h"
 #include "ISR.h"
 #include "iccm.h"
 
@@ -24,22 +24,13 @@
  * @brief Main function
  */ 
 int main(){
-    // char data[] = "Hello from MCU1";
     serial_init(F_CPU, BAUD);
     sei();
-    DDRB |= PB0;
-    iccm_init();
-
-    while(1) 
+    serial_info_P(MCU1_ONLINE);
+    // serial_enable_buffering();
+    while(1) /* Loop the messsage continously */
     { 
-        // serial_read_tx_buffer();
-        // PORTD |= 1<<ICCM_TX;      
-        // serial_info(data);
-        // _delay_ms(1000);
-        // _delay_ms(500);
-        // iccm_receive();
-        // PORTD &= ~(1<<ICCM_TX);
-        // _delay_ms(1000);
+        _delay_ms(1000);
         // iccm_receive();      
     }
     return 0;
