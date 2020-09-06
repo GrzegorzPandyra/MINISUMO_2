@@ -24,16 +24,12 @@
  * @brief Main function
  */ 
 int main(){
-    char data[] = "Hello from MCU1";
-    char data2[] = "MCU1 online";
     serial_init(F_CPU, BAUD);
     sei();
-    DDRB |= 0x01;
-    serial_info(data2);
+    serial_info_P(MCU1_ONLINE);
     // serial_enable_buffering();
     while(1) /* Loop the messsage continously */
     { 
-        serial_info(data);
         _delay_ms(1000);
         // iccm_receive();      
     }

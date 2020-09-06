@@ -16,17 +16,25 @@
 #include "serial_tx.h"
 #include "common_const.h"
 #include <avr/io.h>
+#include <avr/pgmspace.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
 /* Local macro definitions */
 #define MAX_UART_DATA_LENGTH 100
-#define TX_BUFFER_SIZE       300
+#define TX_BUFFER_SIZE       10 //300
 #define MSG_SRC_LENGTH       8
 #define DECIMAL              10
 #define UINT32_MAX_DIGITS    10
 #define OMIT_SLASH 1
+
+/* Literals kept in codeflash for logging             0|                             |29*/
+static const char TX_BUFFER_OVERFLOW_P[]     PROGMEM = "TX buffer overflow!";
+static const char LOG_BUFFERING_ENABLED_P[]  PROGMEM = "Log buffering enabled";
+static const char LOG_BUFFERING_DISABLED_P[] PROGMEM = "Log buffering disabled";
+static const char MCU1_ONLINE_P[]            PROGMEM = "MCU1 online";
+static const char MCU2_ONLINE_P[]            PROGMEM = "MCU2 online";
 
 /* Local macro-like functions */
 /* Local static variables */
@@ -35,6 +43,14 @@ static char *tx_buffer_head = tx_buffer;
 static Data_Target_T data_destination = T_UDR;
 
 /* Global variables */
+char progmem_buffer[PROGMEM_BUFF_SIZE] = {0};
+const char* progmem_string_table[] PROGMEM = {
+    TX_BUFFER_OVERFLOW_P, 
+    LOG_BUFFERING_ENABLED_P,
+    LOG_BUFFERING_DISABLED_P,
+    MCU1_ONLINE_P,
+    MCU2_ONLINE_P
+};
 /* Local static functions */
 static void to_udr(const unsigned char c);
 static void to_tx_buffer(const char c);
@@ -175,7 +191,7 @@ static void show_tx_buffer_overflow_error(void){
         serial_disable_buffering();
     
     to_udr(NEWLINE_CHAR);
-    serial_err("TX buffer overflow!");
+    serial_err_P(TX_BUFFER_OVERFLOW);
     
     if(is_buffering_enabled)
         serial_enable_buffering();
@@ -271,16 +287,17 @@ void serial_log_data(const Log_Metadata_T metadata, const char *str, Data_T data
  * @brief Enable data buffering
  */
 void serial_enable_buffering(void){
-    serial_info("Log buffering - enabled");
+    serial_info_P(LOG_BUFFERING_ENABLED);
     data_destination = T_TX_BUFFER;
 }
 
 /**
  * @brief Disable data buffering
  */
+    
 void serial_disable_buffering(void){
     data_destination = T_UDR;
-    serial_info("Log buffering - disabled");
+    serial_info_P(LOG_BUFFERING_DISABLED);
 }
 
 /**

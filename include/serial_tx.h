@@ -7,6 +7,7 @@
 */
 #include <stdint.h>
 #include <stdbool.h>
+#include <avr/pgmspace.h>
 
 /**
  * @brief Describes the type of log being send.
@@ -56,15 +57,34 @@ typedef enum Data_Target_Tag{
 } Data_Target_T;
 
 /* Local macro-like functions */
-#define METADATA(type) (Log_Metadata_T){__FILE__, __LINE__, type}
-#define serial_info(str) (serial_log( METADATA(INFO), str ))
-#define serial_warn(str) (serial_log( METADATA(WARNING), str ))
-#define serial_err(str)  (serial_log( METADATA(ERROR), str ))
-#define serial_data_int(str, data, data_length) (serial_log_data( METADATA(DATA), str, (Data_T){data, data_length, INT} ))
-#define serial_data_uint8(str, data, data_length) (serial_log_data( METADATA(DATA), str, (Data_T){data, data_length, UINT8} ))
-#define serial_data_str(str, data, data_length) (serial_log_data( METADATA(DATA), str, (Data_T){data, data_length, STRING} ))
+#define copy_to_ram(id) (strcpy_P(progmem_buffer, (char*)pgm_read_word(&progmem_string_table[id])))
+#define get_metadata(type) (Log_Metadata_T){__FILE__, __LINE__, type}
+
+#define serial_info(str) (serial_log( get_metadata(INFO), str ))
+#define serial_info_P(id) copy_to_ram(id); \
+                          serial_log(get_metadata(INFO), progmem_buffer)
+                          
+#define serial_warn(str) (serial_log( get_metadata(WARNING), str ))
+#define serial_warn_P(id) copy_to_ram(id); \
+                          serial_log(get_metadata(WARNING), progmem_buffer)
+#define serial_err(str)  (serial_log( get_metadata(ERROR), str ))
+#define serial_err_P(id) copy_to_ram(id); \
+                         serial_log(get_metadata(ERROR), progmem_buffer)
+
+#define serial_data_int(str, data, data_length) (serial_log_data( get_metadata(DATA), str, (Data_T){data, data_length, INT} ))
+#define serial_data_uint8(str, data, data_length) (serial_log_data( get_metadata(DATA), str, (Data_T){data, data_length, UINT8} ))
+#define serial_data_str(str, data, data_length) (serial_log_data( get_metadata(DATA), str, (Data_T){data, data_length, STRING} ))
+
+#define PROGMEM_BUFF_SIZE      30
+#define TX_BUFFER_OVERFLOW     0 
+#define LOG_BUFFERING_ENABLED  1 
+#define LOG_BUFFERING_DISABLED 2 
+#define MCU1_ONLINE            3 
+#define MCU2_ONLINE            4 
 
 /* Global variables */
+extern char progmem_buffer[];
+extern const char* progmem_string_table[];
 /* Global functions */
 void serial_init(uint32_t f_cpu, uint32_t baudrate);
 void serial_log(const Log_Metadata_T metadata, const char *str);

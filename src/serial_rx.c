@@ -32,8 +32,8 @@ static char rx_buffer[RX_BUFFER_SIZE] = {0};
 static char *rx_buffer_head = rx_buffer;
 
 static bool str_cmp(const char *str1, const char *str2);
-static void on_dummy_func_1(void);
-static void on_dummy_func_2(void);
+// static void on_dummy_func_1(void);
+// static void on_dummy_func_2(void);
 static void to_udr(const unsigned char c);
 // static void clear_rx_buffer(void);
 /* Local static variables */
@@ -44,11 +44,11 @@ typedef struct Cmd_Record_Tag{
 } Cmd_Record_T;
 
 const Cmd_Record_T cmd_list[] = {
-    {"serial enable buffering", serial_enable_buffering},
-    {"serial disable buffering", serial_disable_buffering},
-    {"serial read tx buffer", serial_read_tx_buffer},
-    {"serial dummy func 1", on_dummy_func_1},
-    {"sdf2", on_dummy_func_2}
+    // {"serial enable buffering", serial_enable_buffering},
+    // {"serial disable buffering", serial_disable_buffering},
+    // {"serial read tx buffer", serial_read_tx_buffer},
+    // {"serial dummy func 1", on_dummy_func_1},
+    // {"sdf2", on_dummy_func_2}
 };
 
 
@@ -57,15 +57,15 @@ const Cmd_Record_T cmd_list[] = {
 static void to_rx_buffer(const char c);
 static void parse_cmd(const char *str);
 
-static void on_dummy_func_1(void){
-    serial_info("dummy1");
-    serial_read_tx_buffer();
-}
+// static void on_dummy_func_1(void){
+//     serial_info("dummy1");
+//     serial_read_tx_buffer();
+// }
 
-static void on_dummy_func_2(void){
-    serial_info("dummy2");
-    serial_read_tx_buffer();
-}
+// static void on_dummy_func_2(void){
+//     serial_info("dummy2");
+//     serial_read_tx_buffer();
+// }
 
 static void to_rx_buffer(const char c){
     if(!serial_is_rx_buffer_full()){

@@ -47,7 +47,7 @@ ISR(USART_RXC_vect){
         }
     } if (c == '0'){
         if(sizeof("12345") == 6){
-            serial_info("sizeof = 6");
+            // serial_info("sizeof = 6");
         }
         if(sizeof("12345") == 5){
             // serial_info("sizeof = 5");
