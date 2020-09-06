@@ -1,17 +1,5 @@
 /** @file serial_tx.c
-*   @brief Implementation of serial communication 
-*   Source file implementing communication between MCU and PC.
-*   @TODO add \n for sending data, change order of args in serial send data,
-*   delete serial_log_data reference
-*   
-*   TX operation
-*   To send data over UART use serial_send(src,type,str) function. Str must be a null-terminated string. 
-*   All arguments are written to USART's UDR char-by-char.
-*   
-*   RX operation
-*   Data is received by ISR defined in serial_interrupts.h ISR accesses serial_receiver_char(c) to write received character to rx_buffer.
-*   Once all data is stored in rx_buffer, rx_buffer_ready flag is set, to indicate that data is ready to be processed. For that, serial_read()
-*   function is called periodically. IMPORTANT: Rx data must be newline-terminated (configure your terminal to add LF at the end of RX data).
+*   @brief Implementation of UART transmission 
 */
 #include "serial_tx.h"
 #include "common_const.h"
@@ -23,7 +11,7 @@
 
 /* Local macro definitions */
 #define MAX_UART_DATA_LENGTH 100
-#define TX_BUFFER_SIZE       10 //300
+#define TX_BUFFER_SIZE       200
 #define MSG_SRC_LENGTH       8
 #define DECIMAL              10
 #define UINT32_MAX_DIGITS    10
