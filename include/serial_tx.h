@@ -81,6 +81,7 @@ typedef enum Data_Target_Tag{
 #define LOG_BUFFERING_DISABLED 2 
 #define MCU1_ONLINE            3 
 #define MCU2_ONLINE            4 
+#define CMD_NOT_FOUND          5
 
 /* Global variables */
 extern char progmem_buffer[];

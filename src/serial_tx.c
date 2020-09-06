@@ -35,6 +35,7 @@ static const char LOG_BUFFERING_ENABLED_P[]  PROGMEM = "Log buffering enabled";
 static const char LOG_BUFFERING_DISABLED_P[] PROGMEM = "Log buffering disabled";
 static const char MCU1_ONLINE_P[]            PROGMEM = "MCU1 online";
 static const char MCU2_ONLINE_P[]            PROGMEM = "MCU2 online";
+static const char CMD_NOT_FOUND_P[]          PROGMEM = "Cmd not found";
 
 /* Local macro-like functions */
 /* Local static variables */
@@ -49,7 +50,8 @@ const char* progmem_string_table[] PROGMEM = {
     LOG_BUFFERING_ENABLED_P,
     LOG_BUFFERING_DISABLED_P,
     MCU1_ONLINE_P,
-    MCU2_ONLINE_P
+    MCU2_ONLINE_P,
+    CMD_NOT_FOUND_P
 };
 /* Local static functions */
 static void to_udr(const unsigned char c);

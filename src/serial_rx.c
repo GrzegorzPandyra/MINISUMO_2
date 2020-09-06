@@ -1,104 +1,82 @@
 /** @file serial_rx.c
-*   @brief Implementation of serial communication 
+*   @brief Implements receiving part of serial communication
 *   Source file implementing communication between MCU and PC.
-*   @TODO add \n for sending data, change order of args in serial send data,
-*   delete serial_log_data reference
-*   
-*   TX operation
-*   To send data over UART use serial_send(src,type,str) function. Str must be a null-terminated string. 
-*   All arguments are written to USART's UDR char-by-char.
-*   
-*   RX operation
-*   Data is received by ISR defined in serial_interrupts.h ISR accesses serial_receiver_char(c) to write received character to rx_buffer.
-*   Once all data is stored in rx_buffer, rx_buffer_ready flag is set, to indicate that data is ready to be processed. For that, serial_read()
-*   function is called periodically. IMPORTANT: Rx data must be newline-terminated (configure your terminal to add LF at the end of RX data).
 */
 #include <avr/io.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "common_const.h"
 #include "serial_rx.h"
 #include "serial_tx.h"
-// #include <string.h>
 
 /* Local macro definitions */
-#define RX_BUFFER_SIZE 20
-#define CMD_MAX_STRING_LENGTH 30
+#define RX_BUFFER_SIZE 10
 
 /* Local functions and macro-like functions */
 #define arr_length(arr) (sizeof(arr)/sizeof(arr[0]))
 
-static char rx_buffer[RX_BUFFER_SIZE] = {0};
-static char *rx_buffer_head = rx_buffer;
-
-static bool str_cmp(const char *str1, const char *str2);
-// static void on_dummy_func_1(void);
-// static void on_dummy_func_2(void);
-static void to_udr(const unsigned char c);
-// static void clear_rx_buffer(void);
-/* Local static variables */
-
+/* Local type definitions */
+/**
+ * @brief Structure binding cmd to a callback, used during rx_buffer parsing
+ */
 typedef struct Cmd_Record_Tag{
-    char string[CMD_MAX_STRING_LENGTH];
+    char string[RX_BUFFER_SIZE];
     void (*callback)();
 } Cmd_Record_T;
 
+/* Local static variables */
+static char rx_buffer[RX_BUFFER_SIZE] = {0};
+static char *rx_buffer_head = rx_buffer;
 const Cmd_Record_T cmd_list[] = {
-    // {"serial enable buffering", serial_enable_buffering},
-    // {"serial disable buffering", serial_disable_buffering},
-    // {"serial read tx buffer", serial_read_tx_buffer},
-    // {"serial dummy func 1", on_dummy_func_1},
-    // {"sdf2", on_dummy_func_2}
+    {"enbuff", serial_enable_buffering},
+    {"disbuff", serial_disable_buffering},
+    {"rdtx", serial_read_tx_buffer},
+    {"clrtx", serial_clear_tx_buffer},
+    {"rdrx", serial_read_rx_buffer},
+    {"clrrx", serial_clear_rx_buffer}
 };
 
 
 /* Global variables */
 /* Local static functions */
-static void to_rx_buffer(const char c);
-static void parse_cmd(const char *str);
+static bool to_rx_buffer(const char c);
+static void to_udr(const unsigned char c);
+static const Cmd_Record_T* find_cmd(const char *cmd);
 
-// static void on_dummy_func_1(void){
-//     serial_info("dummy1");
-//     serial_read_tx_buffer();
-// }
-
-// static void on_dummy_func_2(void){
-//     serial_info("dummy2");
-//     serial_read_tx_buffer();
-// }
-
-static void to_rx_buffer(const char c){
+/**
+ * @brief Attempts to store char c in rx_buffer 
+ * @param c Char to be stored
+ */
+static bool to_rx_buffer(const char c){
     if(!serial_is_rx_buffer_full()){
         *rx_buffer_head = c;
         rx_buffer_head++;
         *rx_buffer_head = NULL_CHAR;
-    }
-}
-
-static void parse_cmd(const char *str){
-    for(uint8_t i = 0; i < arr_length(cmd_list); i++){
-        // serial_data_str("rx bufer", rx_buffer, 10);
-        // serial_log_data( (Log_Metadata_T){"", "", INFO}, "str1", (Data_T){cmd_list[i].string, i, STRING} );
-        // serial_log_data( (Log_Metadata_T){"", "", INFO}, "str2", (Data_T){str, i, STRING} );
-        serial_data_str("str1", (char*)cmd_list[i].string, i);
-        serial_data_str("str2", (char*)str, i);
-        if(str_cmp(cmd_list[i].string, str)){
-            serial_info("found cmd");
-            cmd_list[i].callback();
-            break;
-        }
-    }
-    // serial_info("cmd not found");
-}
-
-static bool str_cmp(const char *str1, const char *str2){
-    for(; *str1 == *str2 && *str1 != NULL_CHAR && *str2 != NULL_CHAR; str1++, str2++){
-        if(*str1 == NULL_CHAR && *str2 == NULL_CHAR)
-            return true;    
+        return true;
     }
     return false;
 }
 
+/**
+ * @brief Searches for cmd in cmd_list 
+ * Returns true if cmd has been found and returns adress of cmd_record via argument
+ * @param cmd string to be matched in cmd_list
+ */
+static const Cmd_Record_T* find_cmd(const char *cmd){
+    for(uint8_t i = 0; i < arr_length(cmd_list); i++){
+        if(0 == strcmp(cmd_list[i].string, cmd)){
+            return &(cmd_list[i]);
+        }
+    }
+    serial_err_P(CMD_NOT_FOUND);
+    return NULL;
+}
+
+/**
+ * @brief Sends char c to UDR
+ * @param c Char to be send
+ */
 static void to_udr(const unsigned char c){
     while ( !( UCSRA & (1<<UDRE)) )
     ;
@@ -117,16 +95,24 @@ bool serial_is_rx_buffer_full(void){
 }
 
 /**
- * @brief Puts single character c into rx_buffer
- * Used by USART RX ISR to store data from RX channel. 
+ * @brief Controls data received in ISR - stores them in rx_buffer or executes matched callbacks
  * @param c Char received from ISR
  */
 void serial_on_receive(const char c){
-    // serial_info("on receive");
-    to_rx_buffer(c);
-    // parse_cmd(rx_buffer);
-    // clear_rx_buffer();
+    if(c == LF || c == CR) {
+        const Cmd_Record_T *cmd_record = find_cmd(rx_buffer);
+        if(cmd_record != NULL){
+            cmd_record->callback();
+        }
+        serial_clear_rx_buffer();
+    } else {
+        to_rx_buffer(c);
+    }
 }
+
+/**
+ * @brief Transfer contents of rx_buffer to UDR
+ */
 void serial_read_rx_buffer(void){
     if(rx_buffer_head != rx_buffer){
         char *rx_buffer_head_ptr = rx_buffer;
@@ -137,6 +123,10 @@ void serial_read_rx_buffer(void){
     }
 }
 
+/**
+ * @brief Return rx_buffer_head to the beginning of rx_buffer
+ */
 void serial_clear_rx_buffer(void){
     rx_buffer_head = rx_buffer;
+    *rx_buffer_head = NULL_CHAR;
 }

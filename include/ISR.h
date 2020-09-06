@@ -14,45 +14,11 @@
 
 /**
  * @brief Interrupt routine for USART receive complete bit
- * Reads a single character from UDR and calls function to store character c in rx_buffer
+ * Reads a single character from UDR and calls function handle this data
  */
 ISR(USART_RXC_vect){
     char c = (char)UDR;
-    // serial_on_receive(c);
-    if(c == '1'){
-        serial_read_tx_buffer();
-    } else if(c == '2'){
-        serial_clear_tx_buffer();
-    } else if(c == '3'){
-        serial_read_rx_buffer();
-    } else if(c == '4'){
-        serial_clear_rx_buffer();
-    } else if(c == '5'){
-        serial_disable_buffering();
-    } else if(c == '6'){
-        serial_enable_buffering();
-    } else if(c == '7'){
-        UDR = '7';
-    } else if(c == '8'){
-        if(serial_is_tx_buffer_full()){
-            serial_info("tx buffer full");
-        } else {
-            serial_info("tx buffer not full");
-        }
-    } else if(c == '9'){
-        if(serial_is_rx_buffer_full()){
-            serial_info("rx buffer full");
-        } else {
-            serial_info("rx buffer not full");
-        }
-    } if (c == '0'){
-        if(sizeof("12345") == 6){
-            // serial_info("sizeof = 6");
-        }
-        if(sizeof("12345") == 5){
-            // serial_info("sizeof = 5");
-        }
-    }
+    serial_on_receive(c);
 }
 
 /**
