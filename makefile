@@ -22,11 +22,13 @@ CFLAGS=-I $(INC_DIR) -Wall -Os -std=c99
 
 #source files list
 MCU1_SRC_LIST = $(SRC_DIR)/mcu1.c \
-		   		$(SRC_DIR)/serial_interface.c \
+		   		$(SRC_DIR)/serial_tx.c \
+		   		$(SRC_DIR)/serial_rx.c \
 		   		$(SRC_DIR)/iccm.c \
 
 MCU2_SRC_LIST = $(SRC_DIR)/mcu2.c \
-		   		$(SRC_DIR)/serial_interface.c \
+		   		$(SRC_DIR)/serial_tx.c \
+		   		$(SRC_DIR)/serial_rx.c \
 		   		$(SRC_DIR)/iccm.c \
 
 #make all rule
@@ -79,5 +81,12 @@ clean:
 	@rm -f $(OUT_DIR)/minisumo2_mcu2.hex
 	@echo '### Clean finished! ###'
 	@echo ' '
+
+#memory analysis
+mem: minisumo2_mcu1.elf minisumo2_mcu2.elf
+	@echo ' ********************************************************************************************************* '
+	avr-size --mcu=atmega8 --format=avr out/minisumo2_mcu1.elf
+	@echo ' ********************************************************************************************************* '
+	avr-size --mcu=atmega8 --format=avr out/minisumo2_mcu2.elf
 
 

@@ -6,21 +6,19 @@
     This file needs to be included in file with "main" function. ISRs are kept separated here for the purpose of clarity. 
 */
 
-#include "serial_interface.h"
+#include "serial_tx.h"
+#include "serial_rx.h"
 #include "iccm.h"
 
 #define NULL 0
 
 /**
  * @brief Interrupt routine for USART receive complete bit
- * Reads a single character from UDR and calls function to store character c in rx_buffer
+ * Reads a single character from UDR and calls function handle this data
  */
-ISR(USART_RXC_vect)
-{
-    char c; 
-    c = UDR;
-    UDR = c;
-    serial_receive_char(c);
+ISR(USART_RXC_vect){
+    char c = (char)UDR;
+    serial_on_receive(c);
 }
 
 /**
@@ -49,24 +47,4 @@ ISR(INT0_vect)
     }
 }
 
-/**
- * @brief Interrupt routine for ICCM RX pin (INT1)
- * Rising edge on RX pin triggers sampling of RX pin signal. Routine will read defined number of bits equal to the size of data frame. 
- * Then data (one character) will be copied to rx_buffer in ICCM module.
- * This function is doubled, since on each MCU different pin is used for interrupt.
- */
-ISR(INT1_vect)
-{
-    uint8_t i;
-    _delay_ms(50);
-    char c = 0;
-    for(i = 0; i < 8; i++)
-    {
-        c |= (PINB & (1<<SW_RX))<<i;
-        _delay_ms(50);
-    }
-    _delay_ms(50);
-    _delay_ms(50);
-    iccm_receive_char(c);
-}
 #endif /* ISR_GUARD */
