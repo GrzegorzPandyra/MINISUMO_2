@@ -277,7 +277,7 @@ void serial_log_data(const Log_Metadata_T metadata, const char *str, Data_T data
  * @brief Enable data buffering
  */
 void serial_enable_buffering(void){
-    serial_info_P(LOG_BUFFERING_ENABLED);
+    // serial_info_P(LOG_BUFFERING_ENABLED);
     data_destination = T_TX_BUFFER;
 }
 
@@ -287,7 +287,7 @@ void serial_enable_buffering(void){
     
 void serial_disable_buffering(void){
     data_destination = T_UDR;
-    serial_info_P(LOG_BUFFERING_DISABLED);
+    // serial_info_P(LOG_BUFFERING_DISABLED);
 }
 
 /**

@@ -20,8 +20,8 @@
 #define CB(x) (~(1<<(x)))       //clear bit
 
 /* Local static variables */
-static char rx_buffer[ICCM_RX_BUFFER_LENGTH] = {'\0'};
-static char *rx_buffer_ptr = rx_buffer;
+static char iccm_rx_buffer[ICCM_RX_BUFFER_LENGTH] = {'\0'};
+static char *iccm_rx_buffer_ptr = iccm_rx_buffer;
 static uint8_t rx_complete_flag = 0;
 
 /* Global variables */
@@ -63,6 +63,7 @@ static ICCM_DataFrame_T create_frame(char c){
  * @param frame Data to be send to another MCU
  */
 static void transmit(ICCM_DataFrame_T frame){
+    int data_arr[10] = {0};
     for(uint8_t i = 0; i < ICCM_FRAME_SIZE; i++){
         uint8_t current_bit = (frame.raw_bits>>i) & 0x0001;
         if(current_bit){
@@ -70,10 +71,12 @@ static void transmit(ICCM_DataFrame_T frame){
         } else {
             PORTD &= CB(ICCM_TX);
         }
+        data_arr[i] = current_bit;
         _delay_ms(ICCM_DELAY);
     }
-    _delay_ms(ICCM_DELAY);
+    serial_data_int("send data:",data_arr, 10);
     PORTD &= CB(ICCM_TX);
+    _delay_ms(ICCM_DELAY*20);
 }
 
 
@@ -113,30 +116,30 @@ void iccm_send(char *str){
 }
 
 /**
- * @brief Stores single char in rx_buffer
- * Used by ISR to put received character to rx_buffer. 
+ * @brief Stores single char in iccm_rx_buffer
+ * Used by ISR to put received character to iccm_rx_buffer. 
  * @param c         Char to be stored
  * @return uint8_t  Result if char could be stored or if buffer is full
  */
 uint8_t iccm_receive_char(char c){
     uint8_t result = 0;
-    if(*rx_buffer_ptr == rx_buffer[ICCM_RX_BUFFER_LENGTH-1]){
+    if(*iccm_rx_buffer_ptr == iccm_rx_buffer[ICCM_RX_BUFFER_LENGTH-1]){
         // serial_warn("ICCM RX BUFFER OVERFLOW");
     }else{
-        *rx_buffer_ptr = c;
-        rx_buffer_ptr++;
+        *iccm_rx_buffer_ptr = c;
+        iccm_rx_buffer_ptr++;
         result = 1;
-        serial_info( rx_buffer_ptr-1);
+        serial_info( iccm_rx_buffer_ptr-1);
     }
     return result;
 }
 
 void iccm_receive(void){
     if(rx_complete_flag){
-        rx_buffer_ptr = rx_buffer;
+        iccm_rx_buffer_ptr = iccm_rx_buffer;
         serial_info("Reading RX buffer...");
-        serial_info(rx_buffer_ptr);
-        rx_buffer_ptr = NULL;
+        serial_info(iccm_rx_buffer_ptr);
+        iccm_rx_buffer_ptr = NULL;
         iccm_set_rx_complete_flag(0);
     }
 }
@@ -147,8 +150,33 @@ void iccm_set_rx_complete_flag(uint8_t value){
 }
 
 
-void iccm_read_char(void){
+uint8_t cnt = 0;
+void iccm_on_receive(char c){
     
+    // serial_info("ISR triggered");
+    char cc = 0;
+    // int data_arr[8] = {0};
+    serial_enable_buffering();
+    _delay_ms(ICCM_DELAY*3/2);
+    for(uint8_t i = 0; i < ICCM_DATA_SIZE; i++){
+        cc |= (PIND & SB(ICCM_RX)) ? SB(i) : c;
+        // data_arr[ICCM_DATA_SIZE-1-i] = (PIND & SB(ICCM_RX))>>ICCM_RX;
+        _delay_ms(ICCM_DELAY);
+        // if(i == ICCM_DATA_SIZE -1 ){
+        //     _delay_ms(ICCM_DELAY*3);
+        // }
+    }
+    GIFR |= 1<<INTF0;
+    // _delay_ms(ICCM_DELAY*2);
+    // serial_data_int(":",data_arr, 8);
+    serial_data_str(":", &cc, 1);
+    // serial_data_uint8("cnt:", &cnt, 1);
+    serial_disable_buffering();
+    cnt++;  
+    if(cnt == 3 ){
+        cnt = 0;
+        serial_read_tx_buffer();
+    }
 }
 
 

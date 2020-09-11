@@ -25,7 +25,9 @@
  */ 
 int main(){
     serial_init(F_CPU, BAUD);
+    iccm_init();
     sei();
+    DDRB |= 0x01;
     serial_info_P(MCU1_ONLINE);
     // serial_enable_buffering();
     while(1) /* Loop the messsage continously */

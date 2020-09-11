@@ -26,15 +26,19 @@
 int main(){
     // char data[] = "Hello from MCU2";
     serial_init(F_CPU, BAUD);
+    iccm_init();
     sei();
     DDRB |= 0x01;
     serial_info_P(MCU2_ONLINE);
-
+    
     while(1) /* Loop the messsage continously */
     { 
         // serial_info(data);
-        _delay_ms(1000);
-        iccm_receive();      
+        // iccm_send("Ala ma kota xDDD 123456789\0");
+        iccm_send("KITKU 12345 !!!\0");
+        _delay_ms(3000);
+        // PORTD &= ~(1<<ICCM_TX);
+        // _delay_ms(1000);
     }
     return 0;
 }

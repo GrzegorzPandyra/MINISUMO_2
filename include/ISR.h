@@ -9,8 +9,12 @@
 #include "serial_tx.h"
 #include "serial_rx.h"
 #include "iccm.h"
+#include "config.h"
 
-#define NULL 0
+/* Local macro-like functions */
+// #define SB(x) (1<<(x))    //set bit
+// #define CB(x) (~(1<<(x))) //clear bit
+// #define NULL 0
 
 /**
  * @brief Interrupt routine for USART receive complete bit
@@ -28,50 +32,8 @@ ISR(USART_RXC_vect){
  * This function is doubled, since on each MCU different pin is used for interrupt.
  */
 ISR(INT0_vect){
-    uint8_t i;
-
-    // cli();
-    // PORTB |= 1<<PB0;
-    // GICR &= ~(1<<INT0);
-    // _delay_ms(200);
-    char c = 0;
-    uint8_t q = 0;
-    uint8_t d = 0;
-    _delay_ms(200);
-    for(i = 0; i < 8; i++){
-        c |= (PIND & (1<<ICCM_RX))<<i;
-        q = (PIND & (1<<ICCM_RX));
-        // serial_warn("bit received");
-        // serial_data_int(&i, 1);
-        if(q != 0){
-            serial_warn(" 1");
-            d++;
-        } else {
-            serial_warn(" 0");
-        }
-        q = 0;
-        _delay_ms(200);
-    }
-    // if(d==0){
-    // serial_data_str(&c, 1);
-    // }
-    if(d==3){
-        serial_warn("ok");
-        serial_data_str(&c, 1);
-    }
-    // _delay_ms(1000);
-    // serial_warn("INT0 triggered");
-    // serial_data_str(&c, 1);
-    // GICR |= 1<<INT0;
-    // sei();
-    // serial_info("read character:");
-    // serial_data_str(&c, 1);
-    // _delay_ms(1000);
-    // iccm_receive_char(c);
-    // if(c == '\0'){
-        // iccm_set_rx_complete_flag(1);
-    // }
-    // PORTB &= ~(1<<PB0);
+    char c = (char)UDR;
+    iccm_on_receive(c);
 }
 
 #endif /* ISR_GUARD */

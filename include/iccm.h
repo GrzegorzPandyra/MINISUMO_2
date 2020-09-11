@@ -28,7 +28,7 @@ typedef union ICCM_DataFrame_Tag{
 void iccm_init(void);
 void iccm_send(char *str);
 void iccm_receive(void);
-uint8_t iccm_receive_char(char c);
+void iccm_on_receive(char c);
 void iccm_set_rx_complete_flag(uint8_t value);
 
 #endif /* ICCM_GUARD */
