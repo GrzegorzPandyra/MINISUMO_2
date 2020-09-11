@@ -74,14 +74,22 @@ typedef enum Data_Target_Tag{
 #define serial_data_int(str, data, data_length) (serial_log_data( get_metadata(DATA), str, (Data_T){data, data_length, INT} ))
 #define serial_data_uint8(str, data, data_length) (serial_log_data( get_metadata(DATA), str, (Data_T){data, data_length, UINT8} ))
 #define serial_data_str(str, data, data_length) (serial_log_data( get_metadata(DATA), str, (Data_T){data, data_length, STRING} ))
+#define serial_data_str_P(id, data, data_length) copy_to_ram(id); \
+                                                 serial_log_data( get_metadata(DATA), progmem_buffer, (Data_T){data, data_length, STRING} )
 
-#define PROGMEM_BUFF_SIZE      30
-#define TX_BUFFER_OVERFLOW     0 
-#define LOG_BUFFERING_ENABLED  1 
-#define LOG_BUFFERING_DISABLED 2 
-#define MCU1_ONLINE            3 
-#define MCU2_ONLINE            4 
-#define CMD_NOT_FOUND          5
+#define PROGMEM_BUFF_SIZE       30
+#define TX_BUFFER_OVERFLOW      0 
+#define LOG_BUFFERING_ENABLED   1 
+#define LOG_BUFFERING_DISABLED  2 
+#define MCU1_ONLINE             3 
+#define MCU2_ONLINE             4 
+#define CMD_NOT_FOUND           5
+#define ICCM_SENDING_DATA       6
+#define ICCM_RX_BUFFER_DATA     7
+#define ICCM_RX_BUFFER_OVERFLOW 8
+
+
+
 
 /* Global variables */
 extern char progmem_buffer[];
