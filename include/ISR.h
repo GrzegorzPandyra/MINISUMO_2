@@ -32,8 +32,7 @@ ISR(USART_RXC_vect){
  * This function is doubled, since on each MCU different pin is used for interrupt.
  */
 ISR(INT0_vect){
-    char c = (char)UDR;
-    iccm_on_receive(c);
+    iccm_on_rx_trigger();
 }
 
 #endif /* ISR_GUARD */

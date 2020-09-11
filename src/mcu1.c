@@ -33,7 +33,9 @@ int main(){
     while(1) /* Loop the messsage continously */
     { 
         _delay_ms(1000);
-        // iccm_receive();      
+        if(iccm_is_data_available()){
+            iccm_read_iccm_rx_buffer();
+        }
     }
     return 0;
 }

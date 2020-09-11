@@ -35,7 +35,7 @@ int main(){
     { 
         // serial_info(data);
         // iccm_send("Ala ma kota xDDD 123456789\0");
-        iccm_send("KITKU 12345 !!!\0");
+        iccm_send("KITKU 12345 !!!");
         _delay_ms(3000);
         // PORTD &= ~(1<<ICCM_TX);
         // _delay_ms(1000);

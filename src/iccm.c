@@ -13,7 +13,7 @@
 #define ICCM_TX_DELAY 50
 #define MAX_STRING_LENGTH 200
 #define NULL_CHAR '\0'
-#define NULL 0
+#define INCLUDE_NULL_CHAR 1
 
 /* Local macro-like functions */
 #define SB(x) (1<<(x))          //set bit
@@ -21,8 +21,8 @@
 
 /* Local static variables */
 static char iccm_rx_buffer[ICCM_RX_BUFFER_LENGTH] = {'\0'};
-static char *iccm_rx_buffer_ptr = iccm_rx_buffer;
-static uint8_t rx_complete_flag = 0;
+static char *iccm_rx_buffer_head = iccm_rx_buffer;
+static bool rx_complete_flag = false;
 
 /* Global variables */
 /* Local static functions */
@@ -30,15 +30,15 @@ static uint8_t rx_complete_flag = 0;
 /**
  * @brief Search for NULL character in string, returns 0 if no null found in MAX_STRING_LENGTH characters
  * @param str String to be searched
- * @return 0 if NULL character was not found, otherwise number of characters
+ * @return 0 if NULL character was not found, otherwise number of characters (including null-terminator)
  */
-static uint8_t get_str_length(char *str){
-    uint8_t i = 0;
-    while(i < MAX_STRING_LENGTH && *str != NULL_CHAR){
-        i++;
+static uint8_t cstrlen(char *str){
+    uint8_t str_len = 0;
+    while(str_len < MAX_STRING_LENGTH && *str != NULL_CHAR){
+        str_len++;
         str++;
     }
-    return (*str == NULL_CHAR)?i:0;
+    return (*str == NULL_CHAR)?str_len+INCLUDE_NULL_CHAR:0;
 }
 
 /**
@@ -79,6 +79,26 @@ static void transmit(ICCM_DataFrame_T frame){
     _delay_ms(ICCM_DELAY*20);
 }
 
+bool static is_iccm_rx_buffer_full(void){
+    return (iccm_rx_buffer_head >= (iccm_rx_buffer+ICCM_RX_BUFFER_LENGTH));
+}
+
+/**
+ * @brief Stores single char in iccm_rx_buffer
+ * @param c         Char to be stored
+ * @return True, if char could be stored or false, if buffer is full
+ */
+bool to_iccm_rx_buffer(const char c){
+    if(is_iccm_rx_buffer_full()){
+        // serial_warn("ICCM RX BUFFER OVERFLOW");
+        return false;
+    }else{
+        *iccm_rx_buffer_head = c;
+        iccm_rx_buffer_head++;
+        return true;
+    }
+}
+
 
 
 /* Global functions */
@@ -108,58 +128,34 @@ void iccm_init(void){
  * @param str String to be send
  */
 void iccm_send(char *str){
-    serial_data_str("Sending data:", str, get_str_length(str));
-    for(uint8_t cnt = 0; *str != NULL_CHAR && cnt < ICCM_MAX_DATA_LENGTH; cnt++, str++){
+    uint8_t str_len = cstrlen(str);
+    serial_data_str("Sending data:", str, str_len);
+    for(uint8_t cnt = 0; cnt < str_len && cnt < ICCM_MAX_TRANSMIT_DATA_LENGTH; cnt++, str++){
         ICCM_DataFrame_T frame = create_frame(*str);
         transmit(frame);
     }
 }
 
-/**
- * @brief Stores single char in iccm_rx_buffer
- * Used by ISR to put received character to iccm_rx_buffer. 
- * @param c         Char to be stored
- * @return uint8_t  Result if char could be stored or if buffer is full
- */
-uint8_t iccm_receive_char(char c){
-    uint8_t result = 0;
-    if(*iccm_rx_buffer_ptr == iccm_rx_buffer[ICCM_RX_BUFFER_LENGTH-1]){
-        // serial_warn("ICCM RX BUFFER OVERFLOW");
-    }else{
-        *iccm_rx_buffer_ptr = c;
-        iccm_rx_buffer_ptr++;
-        result = 1;
-        serial_info( iccm_rx_buffer_ptr-1);
-    }
-    return result;
-}
 
-void iccm_receive(void){
-    if(rx_complete_flag){
-        iccm_rx_buffer_ptr = iccm_rx_buffer;
+
+void iccm_read_iccm_rx_buffer(void){
+    uint8_t str_len = cstrlen(iccm_rx_buffer);
+    if(str_len > 0){
         serial_info("Reading RX buffer...");
-        serial_info(iccm_rx_buffer_ptr);
-        iccm_rx_buffer_ptr = NULL;
-        iccm_set_rx_complete_flag(0);
+        serial_info(iccm_rx_buffer);
+        iccm_rx_buffer_head = iccm_rx_buffer;
+        rx_complete_flag = false;
     }
 }
 
-void iccm_set_rx_complete_flag(uint8_t value){
-    rx_complete_flag = value;
-    // serial_info("rx flag changed");
-}
-
-
-uint8_t cnt = 0;
-void iccm_on_receive(char c){
-    
+static char receive_char(){
     // serial_info("ISR triggered");
-    char cc = 0;
+    char c = 0;
     // int data_arr[8] = {0};
     serial_enable_buffering();
     _delay_ms(ICCM_DELAY*3/2);
     for(uint8_t i = 0; i < ICCM_DATA_SIZE; i++){
-        cc |= (PIND & SB(ICCM_RX)) ? SB(i) : c;
+        c |= (PIND & SB(ICCM_RX)) ? SB(i) : c;
         // data_arr[ICCM_DATA_SIZE-1-i] = (PIND & SB(ICCM_RX))>>ICCM_RX;
         _delay_ms(ICCM_DELAY);
         // if(i == ICCM_DATA_SIZE -1 ){
@@ -169,16 +165,33 @@ void iccm_on_receive(char c){
     GIFR |= 1<<INTF0;
     // _delay_ms(ICCM_DELAY*2);
     // serial_data_int(":",data_arr, 8);
-    serial_data_str(":", &cc, 1);
+    serial_data_str(":", &c, 1);
+    // to_iccm_rx_buffer(c);
     // serial_data_uint8("cnt:", &cnt, 1);
     serial_disable_buffering();
-    cnt++;  
-    if(cnt == 3 ){
-        cnt = 0;
-        serial_read_tx_buffer();
+    // cnt++;  
+    // if(cnt == 3 ){
+    //     cnt = 0;
+    //     serial_read_tx_buffer();
+    // }
+    return c;
+}
+
+// uint8_t cnt = 0;
+void iccm_on_rx_trigger(){
+    char c = receive_char();
+    if(to_iccm_rx_buffer(c)){
+       if(c == NULL_CHAR){
+           rx_complete_flag = true;
+       } 
+    } else {
+        serial_err("ICCM RX BUFFER OVERFLOW");
     }
 }
 
+bool iccm_is_data_available(void){
+    return rx_complete_flag;
+}
 
 
 
