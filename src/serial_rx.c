@@ -36,7 +36,7 @@ const Cmd_Record_T cmd_list[] = {
     {"clrtx", serial_clear_tx_buffer},
     {"rdrx", serial_read_rx_buffer},
     {"clrrx", serial_clear_rx_buffer},
-    {"iccmrdrx", iccm_read_iccm_rx_buffer}
+    {"iccmrdrx", iccm_read_rx_buffer}
 };
 
 

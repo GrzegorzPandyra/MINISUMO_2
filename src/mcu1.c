@@ -20,6 +20,7 @@
 #include "ISR.h"
 #include "iccm.h"
 
+
 /**
  * @brief Main function
  */ 
@@ -29,12 +30,12 @@ int main(){
     sei();
     DDRB |= 0x01;
     serial_info_P(MCU1_ONLINE);
-    // serial_enable_buffering();
     while(1) /* Loop the messsage continously */
     { 
-        _delay_ms(1000);
+        _delay_ms(2000);
+        iccm_send("D11111112222222");
         if(iccm_is_data_available()){
-            iccm_read_iccm_rx_buffer();
+            iccm_read_rx_buffer();
         }
     }
     return 0;

@@ -27,6 +27,7 @@ static const char CMD_NOT_FOUND_P[]            PROGMEM = "Cmd not found";
 static const char ICCM_SENDING_DATA_P[]        PROGMEM = "ICCM Sending data:";
 static const char ICCM_RX_BUFFER_DATA_P[]      PROGMEM = "ICCM RX buffer data:";
 static const char ICCM_RX_BUFFER_OVERFLOW_P[]  PROGMEM = "ICCM RX BUFFER OVERFLOW";
+static const char ICCM_RX_BUFFER_CLEARED_P[]   PROGMEM = "ICCM RX BUFFER cleared";
 
 
 /* Local macro-like functions */
@@ -46,7 +47,8 @@ const char* progmem_string_table[] PROGMEM = {
     CMD_NOT_FOUND_P,
     ICCM_SENDING_DATA_P,
     ICCM_RX_BUFFER_DATA_P,
-    ICCM_RX_BUFFER_OVERFLOW_P
+    ICCM_RX_BUFFER_OVERFLOW_P,
+    ICCM_RX_BUFFER_CLEARED_P
 };
 /* Local static functions */
 static void to_udr(const unsigned char c);

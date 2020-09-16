@@ -30,15 +30,17 @@ int main(){
     sei();
     DDRB |= 0x01;
     serial_info_P(MCU2_ONLINE);
-    
+    // iccm_disable_rx();
+
     while(1) /* Loop the messsage continously */
     { 
         // serial_info(data);
         // iccm_send("Ala ma kota xDDD 123456789\0");
-        iccm_send("KITKU 12345 !!!");
-        _delay_ms(3000);
-        // PORTD &= ~(1<<ICCM_TX);
-        // _delay_ms(1000);
+        _delay_ms(1000);
+        iccm_send("ABCD23456qwerty");
+        if(iccm_is_data_available()){
+            iccm_read_rx_buffer();
+        }
     }
     return 0;
 }

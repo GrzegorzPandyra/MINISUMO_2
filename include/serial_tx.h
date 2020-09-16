@@ -87,6 +87,7 @@ typedef enum Data_Target_Tag{
 #define ICCM_SENDING_DATA       6
 #define ICCM_RX_BUFFER_DATA     7
 #define ICCM_RX_BUFFER_OVERFLOW 8
+#define ICCM_RX_BUFFER_CLEARED  9
 
 
 

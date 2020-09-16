@@ -10,10 +10,21 @@
 #define ICCM_DATA_SIZE 8
 #define ICCM_STOP_BIT  1
 #define ICCM_FRAME_SIZE (ICCM_START_BIT+ICCM_DATA_SIZE+ICCM_STOP_BIT)
-#define ICCM_MAX_TRANSMIT_DATA_LENGTH 20
 /* Local macro-like functions */
 /* Local static variables */
 
+/**
+ * @brief Status describing ICCM state - if data is being transmitted, received or nothing is happening.
+ */
+typedef enum ICCM_Status_Tag{
+    IDLE = 0,
+    RX_IN_PROGRESS = 1,
+    TX_IN_PROGRESS = 2
+} ICCM_Status_T;
+
+/**
+ * @brief Structure of data frame
+ */
 typedef union ICCM_DataFrame_Tag{
     uint16_t raw_bits;
     struct{
@@ -28,9 +39,10 @@ typedef union ICCM_DataFrame_Tag{
 /* Global functions */
 void iccm_init(void);
 void iccm_send(char *str);
-void iccm_read_iccm_rx_buffer(void);
+void iccm_read_rx_buffer(void);
 void iccm_on_rx_trigger(void);
 bool iccm_is_data_available(void);
+void iccm_clear_rx_buffer(void);
 #endif /* ICCM_GUARD */
 
 

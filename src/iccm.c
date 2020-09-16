@@ -9,19 +9,21 @@
 #include "serial_tx.h"
 
 /* Local macro definitions */
-#define ICCM_RX_BUFFER_LENGTH 20
-#define MAX_STRING_LENGTH 200
+#define ICCM_RX_BUFFER_SIZE 20
+#define MAX_STRING_LENGTH ICCM_RX_BUFFER_SIZE
 #define NULL 0
-#define INCLUDE_NULL_CHAR 1
+#define STX 0x02
+#define ETX 0x03
 
 /* Local macro-like functions */
 #define SB(x) (1<<(x))          //set bit
 #define CB(x) (~(1<<(x)))       //clear bit
 
 /* Local static variables */
-static char iccm_rx_buffer[ICCM_RX_BUFFER_LENGTH] = {'\0'};
-static char *iccm_rx_buffer_head = iccm_rx_buffer;
-static bool rx_complete_flag = false;
+static char rx_buffer[ICCM_RX_BUFFER_SIZE] = {0};
+static char *rx_buffer_head = rx_buffer;
+static ICCM_Status_T iccm_status = IDLE;
+static bool rx_complete = false;
 
 /* Global variables */
 /* Local static functions */
@@ -29,15 +31,18 @@ static bool rx_complete_flag = false;
 /**
  * @brief Search for NULL character in string, returns 0 if no null found in MAX_STRING_LENGTH characters
  * @param str String to be searched
- * @return 0 if NULL character was not found, otherwise number of characters (including null-terminator)
+ * @return 0 if NULL character was not found, otherwise number of characters (excluding null-terminator)
  */
 static uint8_t cstrlen(char *str){
     uint8_t str_len = 0;
-    while(str_len < MAX_STRING_LENGTH && *str != NULL){
+    while(str_len < MAX_STRING_LENGTH){
+        if(*str == NULL){
+            return str_len;
+        }
         str_len++;
         str++;
     }
-    return (*str == NULL)?str_len+INCLUDE_NULL_CHAR:0;
+    return 0;
 }
 
 /**
@@ -74,24 +79,25 @@ static void transmit(ICCM_DataFrame_T frame){
 }
 
 /**
- * @brief Checks if iccm_rx_buffer is full
+ * @brief Checks if rx_buffer is full
  */
-bool static is_iccm_rx_buffer_full(void){
-    return (iccm_rx_buffer_head >= (iccm_rx_buffer+ICCM_RX_BUFFER_LENGTH));
+bool static is_rx_buffer_full(void){
+    return (rx_buffer_head >= (rx_buffer+ICCM_RX_BUFFER_SIZE));
 }
 
 /**
- * @brief Stores single char in iccm_rx_buffer
+ * @brief Attempts to store a single char in rx_buffer. Keeps buffer null-terminated. 
  * @param c Char to be stored
  * @return True, if char could be stored or false, if buffer is full
  */
-bool to_iccm_rx_buffer(const char c){
-    if(is_iccm_rx_buffer_full()){
-        // serial_warn("ICCM RX BUFFER OVERFLOW");
+bool to_rx_buffer(const char c){
+    if(is_rx_buffer_full()){
+        serial_err_P(ICCM_RX_BUFFER_OVERFLOW);
+        rx_buffer[ICCM_RX_BUFFER_SIZE-1] = NULL;
         return false;
     }else{
-        *iccm_rx_buffer_head = c;
-        iccm_rx_buffer_head++;
+        *rx_buffer_head = c;
+        rx_buffer_head++;
         return true;
     }
 }
@@ -145,53 +151,82 @@ void iccm_init(void){
 /**
  * @brief Sends string str to another MCU
  * Packs each character of the str into a data frame and sends it bit-by-bit. Data is received by another MCU and handled by ISR.
+ * Data is appended with start character STX (0x02) and end character ETX (0x03)
  * @param str String to be send
  */
 void iccm_send(char *str){
+    iccm_status = TX_IN_PROGRESS;
     uint8_t str_len = cstrlen(str);
     serial_data_str_P(ICCM_SENDING_DATA, str, str_len);
-    for(uint8_t cnt = 0; cnt < str_len && cnt < ICCM_MAX_TRANSMIT_DATA_LENGTH; cnt++, str++){
+    
+    ICCM_DataFrame_T start_frame = create_frame(STX);
+    transmit(start_frame);
+    for(uint8_t cnt = 0; cnt < str_len && cnt < ICCM_RX_BUFFER_SIZE; cnt++, str++){
         ICCM_DataFrame_T frame = create_frame(*str);
         transmit(frame);
     }
+    ICCM_DataFrame_T end_frame = create_frame(ETX);
+    transmit(end_frame);
+
+    iccm_status = IDLE;
 }
 
 
 /**
- * @brief Reads the contents of iccm_rx_buffer and clears it.
+ * @brief Reads the contents of rx_buffer and clears it.
  */
-void iccm_read_iccm_rx_buffer(void){
-    uint8_t str_len = cstrlen(iccm_rx_buffer);
+void iccm_read_rx_buffer(void){
+    uint8_t str_len = cstrlen(rx_buffer);
     if(str_len > 0){
-        serial_data_str_P(ICCM_RX_BUFFER_DATA ,iccm_rx_buffer, str_len);
-        iccm_rx_buffer_head = iccm_rx_buffer;
-        rx_complete_flag = false;
+        serial_data_str_P(ICCM_RX_BUFFER_DATA, rx_buffer, str_len);
+        iccm_clear_rx_buffer();
     }
 }
 
 /**
- * @brief Checks if iccm_rx_buffer has received any data
+ * @brief Checks if rx_buffer has received any data
  */
 bool iccm_is_data_available(void){
-    return rx_complete_flag;
+    return rx_complete;
 } 
 
 /**
  * @brief Local RX ISR handler
- * NULL determines the end of data transfer which is marked by rx_complete_flag.
+ * STX indicates start of data, ETX indicates the end. If no STX is received, then received data is invalid. If TX is in progress, ISR is disregarded.
  */
-void iccm_on_rx_trigger(){
+void iccm_on_rx_trigger(void){
+    if(iccm_status == TX_IN_PROGRESS)
+        return;
+ 
+    static bool stx_received = false;
     const char c = read_byte_on_pin();
-    if(to_iccm_rx_buffer(c)){
-       if(c == NULL){
-           rx_complete_flag = true;
-       } 
-    } else {
-        serial_err_P(ICCM_RX_BUFFER_OVERFLOW);
+ 
+    switch (c){
+    case STX:
+        iccm_status = RX_IN_PROGRESS;
+        stx_received = true;
+        iccm_clear_rx_buffer();
+        break;
+    case ETX:
+        if(stx_received){
+            to_rx_buffer(NULL);
+            rx_complete = true;
+            stx_received = false;
+            iccm_status = IDLE;    
+        }
+        break;
+    default:
+        if(stx_received)
+            to_rx_buffer(c);
+        break;
     }
 }
 
-
-
-
-
+/**
+ * @brief Buffer is considered "clear" when head points to buffer start and has value of NULL
+ */
+void iccm_clear_rx_buffer(void){
+    rx_complete = false;
+    rx_buffer_head = rx_buffer;
+    *rx_buffer_head = NULL;
+}
