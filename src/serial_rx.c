@@ -9,6 +9,7 @@
 #include "common_const.h"
 #include "serial_rx.h"
 #include "serial_tx.h"
+#include "iccm.h"
 
 /* Local macro definitions */
 #define RX_BUFFER_SIZE 10
@@ -34,7 +35,8 @@ const Cmd_Record_T cmd_list[] = {
     {"rdtx", serial_read_tx_buffer},
     {"clrtx", serial_clear_tx_buffer},
     {"rdrx", serial_read_rx_buffer},
-    {"clrrx", serial_clear_rx_buffer}
+    {"clrrx", serial_clear_rx_buffer},
+    {"iccmrdrx", iccm_read_rx_buffer}
 };
 
 

@@ -17,13 +17,18 @@
 #define UINT32_MAX_DIGITS    10
 #define OMIT_SLASH 1
 
-/* Literals kept in codeflash for logging             0|                             |29*/
-static const char TX_BUFFER_OVERFLOW_P[]     PROGMEM = "TX buffer overflow!";
-static const char LOG_BUFFERING_ENABLED_P[]  PROGMEM = "Log buffering enabled";
-static const char LOG_BUFFERING_DISABLED_P[] PROGMEM = "Log buffering disabled";
-static const char MCU1_ONLINE_P[]            PROGMEM = "MCU1 online";
-static const char MCU2_ONLINE_P[]            PROGMEM = "MCU2 online";
-static const char CMD_NOT_FOUND_P[]          PROGMEM = "Cmd not found";
+/* Literals kept in codeflash for logging               0|                             |29*/
+static const char TX_BUFFER_OVERFLOW_P[]       PROGMEM = "TX buffer overflow!";
+static const char LOG_BUFFERING_ENABLED_P[]    PROGMEM = "Log buffering enabled";
+static const char LOG_BUFFERING_DISABLED_P[]   PROGMEM = "Log buffering disabled";
+static const char MCU1_ONLINE_P[]              PROGMEM = "MCU1 online";
+static const char MCU2_ONLINE_P[]              PROGMEM = "MCU2 online";
+static const char CMD_NOT_FOUND_P[]            PROGMEM = "Cmd not found";
+static const char ICCM_SENDING_DATA_P[]        PROGMEM = "ICCM Sending data:";
+static const char ICCM_RX_BUFFER_DATA_P[]      PROGMEM = "ICCM RX buffer data:";
+static const char ICCM_RX_BUFFER_OVERFLOW_P[]  PROGMEM = "ICCM RX BUFFER OVERFLOW";
+static const char ICCM_RX_BUFFER_CLEARED_P[]   PROGMEM = "ICCM RX BUFFER cleared";
+
 
 /* Local macro-like functions */
 /* Local static variables */
@@ -39,7 +44,11 @@ const char* progmem_string_table[] PROGMEM = {
     LOG_BUFFERING_DISABLED_P,
     MCU1_ONLINE_P,
     MCU2_ONLINE_P,
-    CMD_NOT_FOUND_P
+    CMD_NOT_FOUND_P,
+    ICCM_SENDING_DATA_P,
+    ICCM_RX_BUFFER_DATA_P,
+    ICCM_RX_BUFFER_OVERFLOW_P,
+    ICCM_RX_BUFFER_CLEARED_P
 };
 /* Local static functions */
 static void to_udr(const unsigned char c);
@@ -277,7 +286,7 @@ void serial_log_data(const Log_Metadata_T metadata, const char *str, Data_T data
  * @brief Enable data buffering
  */
 void serial_enable_buffering(void){
-    serial_info_P(LOG_BUFFERING_ENABLED);
+    // serial_info_P(LOG_BUFFERING_ENABLED);
     data_destination = T_TX_BUFFER;
 }
 
@@ -287,7 +296,7 @@ void serial_enable_buffering(void){
     
 void serial_disable_buffering(void){
     data_destination = T_UDR;
-    serial_info_P(LOG_BUFFERING_DISABLED);
+    // serial_info_P(LOG_BUFFERING_DISABLED);
 }
 
 /**

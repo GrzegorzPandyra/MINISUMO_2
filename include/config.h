@@ -6,12 +6,8 @@
 #define BAUD 2400
 #define MYUBRR F_CPU/16/BAUD-1
 
-#if defined MCU1
-    #define SW_RX 4
-    #define SW_TX 5
-#elif defined MCU2
-    #define SW_RX 5
-    #define SW_TX 4
-#endif
+#define ICCM_RX PD2
+#define ICCM_TX PD3
+#define ICCM_DELAY 10
 
 #endif /* CONFIG_GUARD */
