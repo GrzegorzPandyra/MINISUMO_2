@@ -10,4 +10,9 @@
 #define ICCM_TX PD3
 #define ICCM_DELAY 10
 
+#define LS1 PD4
+#define LS2 PD5
+#define LS3 PD6
+#define LS4 PD7
+
 #endif /* CONFIG_GUARD */
