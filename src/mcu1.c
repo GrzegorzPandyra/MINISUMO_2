@@ -24,7 +24,15 @@
 void adc_init(){
     /* Enable ADC*/
     ADCSRA |= 1<<ADEN;
-}
+    /* Enable Free Running mode*/
+    ADCSRA |= 1<<ADFR;
+    /* Trigger initial conversion */
+    ADCSRA |= 1<<ADSC;
+    /* Internal 2.56V voltage ref */
+    ADMUX |= (1<<REFS1)|(1<<REFS0);
+    /* Set ADC channel to match DS1 */
+    ADMUX &= 0xF0;
+}   
 
 
 /**

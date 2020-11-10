@@ -6,6 +6,8 @@
 #include <avr/io.h>
 
 #define num_elems(x) (sizeof(x)/sizeof(x[0]))
+// #define adc_start_conversion() (ADCSRA |= (1<<ADSC))
+// #define adc_result_ready() (~(ADCSRA & (1<<ADSC)))
 
 typedef struct Distance_Sensor_Tag{
     uint8_t pin;
@@ -29,7 +31,9 @@ static uint8_t getAvg(uint8_t *samples, uint8_t num_samples){
 }
 
 void distance_sensor_update_status(){
-
+    uint16_t adc_value = 0;
+    adc_value = ADCH<<8;
+    adc_value = ADCL;
 }
 
 void distance_sensor_get_status(uint8_t *results){
