@@ -30,6 +30,7 @@ MCU2_SRC_LIST = $(SRC_DIR)/mcu2.c \
 		   		$(SRC_DIR)/serial_tx.c \
 		   		$(SRC_DIR)/serial_rx.c \
 		   		$(SRC_DIR)/iccm.c \
+		   		$(SRC_DIR)/drive_ctrl.c \
 
 #make all rule
 all: minisumo2_mcu1.elf minisumo2_mcu1.hex minisumo2_mcu2.elf minisumo2_mcu2.hex
