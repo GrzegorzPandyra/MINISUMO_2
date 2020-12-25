@@ -10,6 +10,8 @@
 #define ICCM_TX PD3
 #define ICCM_DELAY 10
 
+#define LS1 PD4
+
 /* Refer to TB6612FNG datasheet and PCB design */
 #define M1_PWM PC0
 #define M1_IN1 PC2
@@ -23,5 +25,8 @@
 #define M3_IN1 PD7
 #define M4_IN2 PB0
 #define M4_PWM PB1
+#define LS2 PD5
+#define LS3 PD6
+#define LS4 PD7
 
 #endif /* CONFIG_GUARD */
