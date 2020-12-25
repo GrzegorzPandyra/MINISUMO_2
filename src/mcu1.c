@@ -19,6 +19,7 @@
 #include "serial_tx.h"
 #include "ISR.h"
 #include "iccm.h"
+#include "line_sensor.h"
 
 
 /**
@@ -32,11 +33,13 @@ int main(){
     serial_info_P(MCU1_ONLINE);
     while(1) /* Loop the messsage continously */
     { 
-        _delay_ms(2000);
-        iccm_send("D11111112222222");
-        if(iccm_is_data_available()){
-            iccm_read_rx_buffer();
-        }
+        _delay_ms(200);
+        // iccm_send("D11111112222222");
+        // if(iccm_is_data_available()){
+            // iccm_read_rx_buffer();
+        // }
+        update_sensor_status();
+        line_sensor_get_status();
     }
     return 0;
 }
