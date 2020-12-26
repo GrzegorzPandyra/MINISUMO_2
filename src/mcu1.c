@@ -20,6 +20,31 @@
 #include "iccm.h"
 #include "line_sensor.h"
 
+void set_debug_pin(){
+    PORTC |= 1<<PC3;
+}
+
+void clear_debug_pin(){
+    PORTC &= ~(1<<PC3);
+}
+
+void logic(){
+    uint8_t ls_status = line_sensor_get_status();
+    if(ls_status)
+        set_debug_pin();
+    else
+        clear_debug_pin();
+    
+    if(ls_status & 0x01 && ls_status & 0x02)
+        iccm_send("bw");
+    else if(ls_status & 0x04 && ls_status & 0x08)
+        iccm_send("fw");
+    else if(ls_status & 0x01 || ls_status & 0x08)
+        iccm_send("tl");
+    else if(ls_status & 0x02 || ls_status & 0x04)
+        iccm_send("tr");
+    _delay_ms(100);
+}
 
 /**
  * @brief Main function
@@ -29,6 +54,7 @@ int main(){
     iccm_init();
     sei();
     DDRB |= 0x01;
+    DDRC |= 1<<PC3;
     serial_info_P(MCU1_ONLINE);
     while(1) /* Loop the messsage continously */
     { 
@@ -37,7 +63,7 @@ int main(){
         // if(iccm_is_data_available()){
             // iccm_read_rx_buffer();
         // }
-        line_sensor_get_status();
+        logic();
     }
     return 0;
 }

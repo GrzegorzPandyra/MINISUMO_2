@@ -20,6 +20,17 @@
     {"iccmdis", iccm_disable}, \
     {"iccmen", iccm_enable} 
 
+#ifdef MCU1
+/* Line sensor pins*/
+#define LS1 PD4
+#define LS2 PD5
+#define LS3 PD6
+#define LS4 PD7
+
+#define MCU_SPECIFIC_SERIAL_CMD_LIST \
+
+#endif
+
 #ifdef MCU2
 /* Refer to TB6612FNG datasheet and PCB design */
 #define M1_PWM PC0
@@ -35,7 +46,7 @@
 #define M4_IN2 PB0
 #define M4_PWM PB1
 
-#define SPECIFIC_SERIAL_CMD_LIST \
+#define MCU_SPECIFIC_SERIAL_CMD_LIST \
     {"drvfw", drive_ctrl_go_forward}, \
     {"drvbw", drive_ctrl_go_backward}, \
     {"drvtl", drive_ctrl_turn_left}, \
@@ -47,16 +58,6 @@
 
 #endif
 
-#ifdef MCU1
-/* Line sensor pins*/
-#define LS1 PD4
-#define LS2 PD5
-#define LS3 PD6
-#define LS4 PD7
-
-#define SPECIFIC_SERIAL_CMD_LIST \
-
-#endif
 
 
 
