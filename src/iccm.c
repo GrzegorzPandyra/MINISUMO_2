@@ -7,11 +7,12 @@
 #include <util/delay.h>
 #include <avr/io.h>
 #include "serial_tx.h"
+#include "string.h"
 
 /* Local macro definitions */
 #define ICCM_RX_BUFFER_SIZE 20
 #define MAX_STRING_LENGTH ICCM_RX_BUFFER_SIZE
-#define NULL 0
+#define NULL_CHAR 0
 #define STX 0x02
 #define ETX 0x03
 
@@ -36,7 +37,7 @@ static bool rx_complete = false;
 static uint8_t cstrlen(char *str){
     uint8_t str_len = 0;
     while(str_len < MAX_STRING_LENGTH){
-        if(*str == NULL){
+        if(*str == NULL_CHAR){
             return str_len;
         }
         str_len++;
@@ -93,7 +94,7 @@ bool static is_rx_buffer_full(void){
 bool to_rx_buffer(const char c){
     if(is_rx_buffer_full()){
         serial_err_P(ICCM_RX_BUFFER_OVERFLOW);
-        rx_buffer[ICCM_RX_BUFFER_SIZE-1] = NULL;
+        rx_buffer[ICCM_RX_BUFFER_SIZE-1] = NULL_CHAR;
         return false;
     }else{
         *rx_buffer_head = c;
@@ -157,7 +158,7 @@ void iccm_init(void){
 void iccm_send(char *str){
     iccm_status = TX_IN_PROGRESS;
     uint8_t str_len = cstrlen(str);
-    serial_data_str_P(ICCM_SENDING_DATA, str, str_len);
+    // serial_data_str_P(ICCM_SENDING_DATA, str, str_len);
     
     ICCM_DataFrame_T start_frame = create_frame(STX);
     transmit(start_frame);
@@ -175,10 +176,12 @@ void iccm_send(char *str){
 /**
  * @brief Reads the contents of rx_buffer and clears it.
  */
-void iccm_read_rx_buffer(void){
+void iccm_read_rx_buffer(char *buff_out, uint8_t *data_length){
     uint8_t str_len = cstrlen(rx_buffer);
     if(str_len > 0){
-        serial_data_str_P(ICCM_RX_BUFFER_DATA, rx_buffer, str_len);
+        // serial_data_str_P(ICCM_RX_BUFFER_DATA, rx_buffer, str_len);
+        memcpy(buff_out, rx_buffer, str_len);
+        *data_length = str_len;
         iccm_clear_rx_buffer();
     }
 }
@@ -209,7 +212,7 @@ void iccm_on_rx_trigger(void){
         break;
     case ETX:
         if(stx_received){
-            to_rx_buffer(NULL);
+            to_rx_buffer(NULL_CHAR);
             rx_complete = true;
             stx_received = false;
             iccm_status = IDLE;    
@@ -223,10 +226,10 @@ void iccm_on_rx_trigger(void){
 }
 
 /**
- * @brief Buffer is considered "clear" when head points to buffer start and has value of NULL
+ * @brief Buffer is considered "clear" when head points to buffer start and has value of NULL_CHAR
  */
 void iccm_clear_rx_buffer(void){
     rx_complete = false;
     rx_buffer_head = rx_buffer;
-    *rx_buffer_head = NULL;
+    *rx_buffer_head = NULL_CHAR;
 }
