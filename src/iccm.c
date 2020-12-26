@@ -198,7 +198,7 @@ bool iccm_is_data_available(void){
  * STX indicates start of data, ETX indicates the end. If no STX is received, then received data is invalid. If TX is in progress, ISR is disregarded.
  */
 void iccm_on_rx_trigger(void){
-    if(iccm_status == TX_IN_PROGRESS)
+    if(iccm_status == TX_IN_PROGRESS || iccm_status == DISABLED)
         return;
  
     static bool stx_received = false;
@@ -232,4 +232,12 @@ void iccm_clear_rx_buffer(void){
     rx_complete = false;
     rx_buffer_head = rx_buffer;
     *rx_buffer_head = NULL_CHAR;
+}
+
+void iccm_disable(void){
+    iccm_status = DISABLED;
+}
+
+void iccm_enable(void){
+    iccm_status = IDLE;
 }

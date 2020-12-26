@@ -4,7 +4,6 @@
 */
 
 /* Local macro definitions */
-#define MCU1
 /* Local macro-like functions */
 /* Local static variables */
 /* Global variables */
@@ -38,7 +37,6 @@ int main(){
         // if(iccm_is_data_available()){
             // iccm_read_rx_buffer();
         // }
-        update_sensor_status();
         line_sensor_get_status();
     }
     return 0;

@@ -10,7 +10,17 @@
 #define ICCM_TX PD3
 #define ICCM_DELAY 10
 
+#define COMMON_SERIAL_CMD_LIST \
+    {"enbuff", serial_enable_buffering}, \
+    {"disbuff", serial_disable_buffering}, \
+    {"rdtx", serial_read_tx_buffer}, \
+    {"clrtx", serial_clear_tx_buffer}, \
+    {"rdrx", serial_read_rx_buffer}, \
+    {"clrrx", serial_clear_rx_buffer}, \
+    {"iccmdis", iccm_disable}, \
+    {"iccmen", iccm_enable} 
 
+#ifdef MCU2
 /* Refer to TB6612FNG datasheet and PCB design */
 #define M1_PWM PC0
 #define M1_IN1 PC2
@@ -25,10 +35,29 @@
 #define M4_IN2 PB0
 #define M4_PWM PB1
 
+#define SPECIFIC_SERIAL_CMD_LIST \
+    {"drvfw", drive_ctrl_go_forward}, \
+    {"drvbw", drive_ctrl_go_backward}, \
+    {"drvtl", drive_ctrl_turn_left}, \
+    {"drvtr", drive_ctrl_turn_right}, \
+    {"drvinit", drive_ctrl_init}, \
+    {"drvpwmen", drive_ctrl_enable_PWM}, \
+    {"drvpwmdis", drive_ctrl_disable_PWM}, \
+    {"drvstop", drive_ctrl_stop}
+
+#endif
+
+#ifdef MCU1
 /* Line sensor pins*/
 #define LS1 PD4
 #define LS2 PD5
 #define LS3 PD6
 #define LS4 PD7
+
+#define SPECIFIC_SERIAL_CMD_LIST \
+
+#endif
+
+
 
 #endif /* CONFIG_GUARD */

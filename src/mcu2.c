@@ -4,7 +4,6 @@
 */
 
 /* Local macro definitions */
-#define MCU2
 /* Local macro-like functions */
 /* Local static variables */
 /* Global variables */
@@ -39,7 +38,7 @@ int main(){
         _delay_ms(1000);
         iccm_send("ABCD23456qwerty");
         if(iccm_is_data_available()){
-            iccm_read_rx_buffer();
+            // iccm_read_rx_buffer();
         }
     }
     return 0;

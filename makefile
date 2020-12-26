@@ -43,7 +43,7 @@ all: minisumo2_mcu1.elf minisumo2_mcu1.hex minisumo2_mcu2.elf minisumo2_mcu2.hex
 minisumo2_mcu1.elf: 
 	@echo ' ********************************************************************************************************* '
 	@echo 'Building target: $@.. '
-	$(CC) $(MCU1_SRC_LIST) $(CFLAGS) -mmcu=$(MMCU) -o $(OUT_DIR)/$@
+	$(CC) $(MCU1_SRC_LIST) $(CFLAGS) -D MCU1 -mmcu=$(MMCU) -o $(OUT_DIR)/$@
 	@echo 'Finished building target: $@'
 	@echo ' ********************************************************************************************************* '
 	@echo ' '
@@ -52,7 +52,7 @@ minisumo2_mcu1.elf:
 minisumo2_mcu2.elf: 
 	@echo ' ********************************************************************************************************* '
 	@echo 'Building target: $@.. '
-	$(CC) $(MCU2_SRC_LIST) $(CFLAGS) -mmcu=$(MMCU) -o $(OUT_DIR)/$@
+	$(CC) $(MCU2_SRC_LIST) $(CFLAGS) -D MCU2 -mmcu=$(MMCU) -o $(OUT_DIR)/$@
 	@echo 'Finished building target: $@'
 	@echo ' ********************************************************************************************************* '
 	@echo ' '

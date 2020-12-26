@@ -10,6 +10,8 @@
 #include "serial_rx.h"
 #include "serial_tx.h"
 #include "iccm.h"
+#include "config.h"
+#include "drive_ctrl.h"
 
 /* Local macro definitions */
 #define RX_BUFFER_SIZE 10
@@ -30,13 +32,8 @@ typedef struct Cmd_Record_Tag{
 static char rx_buffer[RX_BUFFER_SIZE] = {0};
 static char *rx_buffer_head = rx_buffer;
 const Cmd_Record_T cmd_list[] = {
-    {"enbuff", serial_enable_buffering},
-    {"disbuff", serial_disable_buffering},
-    {"rdtx", serial_read_tx_buffer},
-    {"clrtx", serial_clear_tx_buffer},
-    {"rdrx", serial_read_rx_buffer},
-    {"clrrx", serial_clear_rx_buffer},
-    {"iccmrdrx", iccm_read_rx_buffer}
+    COMMON_SERIAL_CMD_LIST,
+    SPECIFIC_SERIAL_CMD_LIST
 };
 
 
