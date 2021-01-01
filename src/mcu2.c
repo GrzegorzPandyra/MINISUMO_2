@@ -33,7 +33,7 @@ void drv_logic(){
     static uint8_t data_length = 0;
     if(iccm_is_data_available()){
         iccm_read_rx_buffer(rx_buff, &data_length);
-        // serial_data_str("ss",rx_buff, data_length);
+        serial_data_str("dt",rx_buff, data_length);
     }
     
     if((rx_buff[0] == 'f' && rx_buff[1] == 'w') || (rx_buff[0] == 'b' && rx_buff[1] == 'w') || (rx_buff[0] == 't' && rx_buff[1] == 'l') || (rx_buff[0] == 't' && rx_buff[1] == 'r'))
@@ -75,8 +75,8 @@ int main(){
     drive_ctrl_enable_PWM();
 
     while(1) /* Loop the messsage continously */
-    { 
         // serial_info(data);
+    { 
         // iccm_send("Ala ma kota xDDD 123456789\0");
         // _delay_ms(1000);
         // iccm_send("ABCD23456qwerty");

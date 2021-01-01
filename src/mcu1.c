@@ -43,7 +43,7 @@ void logic(){
         iccm_send("tl");
     else if(ls_status & 0x02 || ls_status & 0x04)
         iccm_send("tr");
-    _delay_ms(100);
+    // _delay_ms(100);
 }
 
 /**
@@ -58,7 +58,7 @@ int main(){
     serial_info_P(MCU1_ONLINE);
     while(1) /* Loop the messsage continously */
     { 
-        _delay_ms(200);
+        // _delay_ms(200);
         // iccm_send("D11111112222222");
         // if(iccm_is_data_available()){
             // iccm_read_rx_buffer();

@@ -158,7 +158,7 @@ void iccm_init(void){
 void iccm_send(char *str){
     iccm_status = TX_IN_PROGRESS;
     uint8_t str_len = cstrlen(str);
-    // serial_data_str_P(ICCM_SENDING_DATA, str, str_len);
+    serial_data_str_P(ICCM_SENDING_DATA, str, str_len);
     
     ICCM_DataFrame_T start_frame = create_frame(STX);
     transmit(start_frame);
