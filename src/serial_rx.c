@@ -33,7 +33,7 @@ static char rx_buffer[RX_BUFFER_SIZE] = {0};
 static char *rx_buffer_head = rx_buffer;
 const Cmd_Record_T cmd_list[] = {
     COMMON_SERIAL_CMD_LIST,
-    SPECIFIC_SERIAL_CMD_LIST
+    MCU_SPECIFIC_SERIAL_CMD_LIST
 };
 
 

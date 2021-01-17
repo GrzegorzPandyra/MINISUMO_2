@@ -11,7 +11,7 @@
 
 /* Local macro definitions */
 #define MAX_UART_DATA_LENGTH 100
-#define TX_BUFFER_SIZE       200
+#define TX_BUFFER_SIZE       300
 #define MSG_SRC_LENGTH       8
 #define DECIMAL              10
 #define UINT32_MAX_DIGITS    10

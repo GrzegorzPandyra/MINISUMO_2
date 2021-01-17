@@ -2,13 +2,13 @@
 #ifndef CONFIG_GUARD
 #define CONFIG_GUARD
 
-#define F_CPU 1000000L
-#define BAUD 2400
+#define F_CPU 16000000L
+#define BAUD 9600
 #define MYUBRR F_CPU/16/BAUD-1
 
 #define ICCM_RX PD2
 #define ICCM_TX PD3
-#define ICCM_DELAY 10
+#define ICCM_DELAY_US 30
 
 #define COMMON_SERIAL_CMD_LIST \
     {"enbuff", serial_enable_buffering}, \
@@ -19,6 +19,17 @@
     {"clrrx", serial_clear_rx_buffer}, \
     {"iccmdis", iccm_disable}, \
     {"iccmen", iccm_enable} 
+
+#ifdef MCU1
+/* Line sensor pins*/
+#define LS1 PD4
+#define LS2 PD5
+#define LS3 PD6
+#define LS4 PD7
+
+#define MCU_SPECIFIC_SERIAL_CMD_LIST \
+
+#endif
 
 #ifdef MCU2
 /* Refer to TB6612FNG datasheet and PCB design */
@@ -35,7 +46,7 @@
 #define M4_IN2 PB0
 #define M4_PWM PB1
 
-#define SPECIFIC_SERIAL_CMD_LIST \
+#define MCU_SPECIFIC_SERIAL_CMD_LIST \
     {"drvfw", drive_ctrl_go_forward}, \
     {"drvbw", drive_ctrl_go_backward}, \
     {"drvtl", drive_ctrl_turn_left}, \
@@ -47,16 +58,6 @@
 
 #endif
 
-#ifdef MCU1
-/* Line sensor pins*/
-#define LS1 PD4
-#define LS2 PD5
-#define LS3 PD6
-#define LS4 PD7
-
-#define SPECIFIC_SERIAL_CMD_LIST \
-
-#endif
 
 
 
