@@ -8,7 +8,7 @@
 
 #define ICCM_RX PD2
 #define ICCM_TX PD3
-#define ICCM_DELAY_US 200
+#define ICCM_DELAY_US 30
 
 #define COMMON_SERIAL_CMD_LIST \
     {"enbuff", serial_enable_buffering}, \
