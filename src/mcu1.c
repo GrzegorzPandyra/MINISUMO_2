@@ -36,14 +36,13 @@ void logic(){
         clear_debug_pin();
     
     if(ls_status & 0x01 && ls_status & 0x02)
-        iccm_send("bw");
+        iccm_send("b");
     else if(ls_status & 0x04 && ls_status & 0x08)
-        iccm_send("fw");
-    else if(ls_status & 0x01 || ls_status & 0x08)
-        iccm_send("tl");
-    else if(ls_status & 0x02 || ls_status & 0x04)
-        iccm_send("tr");
-    // _delay_ms(100);
+        iccm_send("f");
+    else if(ls_status & 0x01 && ls_status & 0x08)
+        iccm_send("l");
+    else if(ls_status & 0x02 && ls_status & 0x04)
+        iccm_send("r");
 }
 
 /**
@@ -58,7 +57,7 @@ int main(){
     serial_info_P(MCU1_ONLINE);
     while(1) /* Loop the messsage continously */
     { 
-        // _delay_ms(200);
+        // _delay_us(200);
         // iccm_send("D11111112222222");
         // if(iccm_is_data_available()){
             // iccm_read_rx_buffer();
