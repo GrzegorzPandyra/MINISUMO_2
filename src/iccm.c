@@ -63,7 +63,7 @@ static ICCM_DataFrame_T create_frame(char c){
 
 /**
  * @brief Transmits frame bits into a sequence of high and low voltage states on ICCM_TX pin
- * Data is send starting from far right bit. ICCM_DELAY must be the same on both MCUs.
+ * Data is send starting from far right bit. ICCM_DELAY_US must be the same on both MCUs.
  * @param frame Data to be send to another MCU
  */
 static void transmit(ICCM_DataFrame_T frame){
@@ -74,7 +74,7 @@ static void transmit(ICCM_DataFrame_T frame){
         } else {
             PORTD &= CB(ICCM_TX);
         }
-        _delay_ms(ICCM_DELAY);
+        _delay_us(ICCM_DELAY_US);
     }
     PORTD &= CB(ICCM_TX);
 }
@@ -118,10 +118,10 @@ bool to_rx_buffer(const char c){
  */
 static char read_byte_on_pin(){
     char response_byte = 0;
-    _delay_ms(ICCM_DELAY*3/2);
+    _delay_us(ICCM_DELAY_US*3/2);
     for(uint8_t i = 0; i < ICCM_DATA_SIZE; i++){
         response_byte |= (PIND & SB(ICCM_RX)) ? SB(i) : response_byte;
-        _delay_ms(ICCM_DELAY);
+        _delay_us(ICCM_DELAY_US);
     }
     //Manually set INT0 Flag to ensure interrupt won't fire twice
     GIFR |= 1<<INTF0;
@@ -134,18 +134,18 @@ static char read_byte_on_pin(){
  * @brief Initializes ICCM module
  * Configures rx/tx pins, enables interrupts
  * This module requires followind #defines to be created:
- * ICCM_RX, ICCM_TX, ICCM_DELAY
+ * ICCM_RX, ICCM_TX, ICCM_DELAY_US
  */
 void iccm_init(void){
-    //configure INT0 to activate on rising edge 
+    /* configure INT0 to activate on rising edge  */
     MCUCR |= SB(ISC01) | SB(ISC00);
-    //enable INT0
+    /* enable INT0 */
     GICR |= SB(INT0);
-    //set rx as input
+    /* set rx as input */
     DDRD &= CB(ICCM_RX);
-    //set tx as output
+    /* set tx as output */
     DDRD |= SB(ICCM_TX);
-    //set SW_TX low
+    /* set SW_TX low */
     PORTD &= CB(ICCM_TX);
 }
 
@@ -158,7 +158,7 @@ void iccm_init(void){
 void iccm_send(char *str){
     iccm_status = TX_IN_PROGRESS;
     uint8_t str_len = cstrlen(str);
-    serial_data_str_P(ICCM_SENDING_DATA, str, str_len);
+    // serial_data_str_P(ICCM_SENDING_DATA, str, str_len);
     
     ICCM_DataFrame_T start_frame = create_frame(STX);
     transmit(start_frame);
@@ -179,7 +179,6 @@ void iccm_send(char *str){
 void iccm_read_rx_buffer(char *buff_out, uint8_t *data_length){
     uint8_t str_len = cstrlen(rx_buffer);
     if(str_len > 0){
-        // serial_data_str_P(ICCM_RX_BUFFER_DATA, rx_buffer, str_len);
         memcpy(buff_out, rx_buffer, str_len);
         *data_length = str_len;
         iccm_clear_rx_buffer();
