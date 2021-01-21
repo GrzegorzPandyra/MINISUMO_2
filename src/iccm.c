@@ -17,8 +17,8 @@
 #define ETX 0x03
 
 /* Local macro-like functions */
-#define SB(x) (1<<(x))          //set bit
-#define CB(x) (~(1<<(x)))       //clear bit
+#define SB(x) (1<<(x))          /* set bit   */
+#define CB(x) (~(1<<(x)))       /* clear bit */
 
 /* Local static variables */
 static char rx_buffer[ICCM_RX_BUFFER_SIZE] = {0};
@@ -123,7 +123,7 @@ static char read_byte_on_pin(){
         response_byte |= (PIND & SB(ICCM_RX)) ? SB(i) : response_byte;
         _delay_us(ICCM_DELAY_US);
     }
-    //Manually set INT0 Flag to ensure interrupt won't fire twice
+    /* Manually set INT0 Flag to ensure interrupt won't fire twice */
     GIFR |= 1<<INTF0;
     return response_byte;
 }
