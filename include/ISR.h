@@ -10,6 +10,9 @@
 #include "serial_rx.h"
 #include "iccm.h"
 #include "config.h"
+#ifdef MCU2
+#include "drive_ctrl.h"
+#endif
 
 /**
  * @brief Interrupt routine for USART receive complete bit
@@ -28,5 +31,11 @@ ISR(USART_RXC_vect){
 ISR(INT0_vect){
     iccm_on_rx_trigger();
 }
+
+#ifdef MCU2
+ISR(TIMER0_OVF_vect){  
+    drive_ctrl_PWM();
+}  
+#endif
 
 #endif /* ISR_GUARD */

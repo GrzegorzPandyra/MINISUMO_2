@@ -25,11 +25,13 @@ MCU1_SRC_LIST = $(SRC_DIR)/mcu1.c \
 		   		$(SRC_DIR)/serial_tx.c \
 		   		$(SRC_DIR)/serial_rx.c \
 		   		$(SRC_DIR)/iccm.c \
+		   		$(SRC_DIR)/line_sensor.c \
 
 MCU2_SRC_LIST = $(SRC_DIR)/mcu2.c \
 		   		$(SRC_DIR)/serial_tx.c \
 		   		$(SRC_DIR)/serial_rx.c \
 		   		$(SRC_DIR)/iccm.c \
+		   		$(SRC_DIR)/drive_ctrl.c \
 
 #make all rule
 all: minisumo2_mcu1.elf minisumo2_mcu1.hex minisumo2_mcu2.elf minisumo2_mcu2.hex
@@ -41,7 +43,7 @@ all: minisumo2_mcu1.elf minisumo2_mcu1.hex minisumo2_mcu2.elf minisumo2_mcu2.hex
 minisumo2_mcu1.elf: 
 	@echo ' ********************************************************************************************************* '
 	@echo 'Building target: $@.. '
-	$(CC) $(MCU1_SRC_LIST) $(CFLAGS) -mmcu=$(MMCU) -o $(OUT_DIR)/$@
+	$(CC) $(MCU1_SRC_LIST) $(CFLAGS) -D MCU1 -mmcu=$(MMCU) -o $(OUT_DIR)/$@
 	@echo 'Finished building target: $@'
 	@echo ' ********************************************************************************************************* '
 	@echo ' '
@@ -50,7 +52,7 @@ minisumo2_mcu1.elf:
 minisumo2_mcu2.elf: 
 	@echo ' ********************************************************************************************************* '
 	@echo 'Building target: $@.. '
-	$(CC) $(MCU2_SRC_LIST) $(CFLAGS) -mmcu=$(MMCU) -o $(OUT_DIR)/$@
+	$(CC) $(MCU2_SRC_LIST) $(CFLAGS) -D MCU2 -mmcu=$(MMCU) -o $(OUT_DIR)/$@
 	@echo 'Finished building target: $@'
 	@echo ' ********************************************************************************************************* '
 	@echo ' '

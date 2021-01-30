@@ -19,7 +19,8 @@
 typedef enum ICCM_Status_Tag{
     IDLE = 0,
     RX_IN_PROGRESS = 1,
-    TX_IN_PROGRESS = 2
+    TX_IN_PROGRESS = 2,
+    DISABLED = 3
 } ICCM_Status_T;
 
 /**
@@ -39,10 +40,12 @@ typedef union ICCM_DataFrame_Tag{
 /* Global functions */
 void iccm_init(void);
 void iccm_send(char *str);
-void iccm_read_rx_buffer(void);
+void iccm_read_rx_buffer(char *buff_out, uint8_t *data_length);
 void iccm_on_rx_trigger(void);
 bool iccm_is_data_available(void);
 void iccm_clear_rx_buffer(void);
+void iccm_disable(void);
+void iccm_enable(void);
 #endif /* ICCM_GUARD */
 
 
