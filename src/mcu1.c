@@ -4,7 +4,6 @@
 */
 
 /* Local macro definitions */
-#define MCU1
 /* Local macro-like functions */
 /* Local static variables */
 /* Global variables */
@@ -20,6 +19,7 @@
 #include "ISR.h"
 #include "iccm.h"
 #include "distance_sensor.h"
+#include "line_sensor.h"
 
 void adc_init(){
     /* Enable ADC*/
@@ -34,6 +34,30 @@ void adc_init(){
     ADMUX &= 0xF0;
 }   
 
+void set_debug_pin(){
+    PORTC |= 1<<PC3;
+}
+
+void clear_debug_pin(){
+    PORTC &= ~(1<<PC3);
+}
+
+void logic(){
+    uint8_t ls_status = line_sensor_get_status();
+    if(ls_status)
+        set_debug_pin();
+    else
+        clear_debug_pin();
+    
+    if(ls_status & 0x01 && ls_status & 0x02)
+        iccm_send("b");
+    else if(ls_status & 0x04 && ls_status & 0x08)
+        iccm_send("f");
+    else if(ls_status & 0x01 && ls_status & 0x08)
+        iccm_send("l");
+    else if(ls_status & 0x02 && ls_status & 0x04)
+        iccm_send("r");
+}
 
 /**
  * @brief Main function
@@ -44,6 +68,7 @@ int main(){
     adc_init();
     sei();
     DDRB |= 0x01;
+    DDRC |= 1<<PC3;
     serial_info_P(MCU1_ONLINE);
     uint8_t cnt = 0;
     uint8_t ds1_status = 0;
@@ -52,15 +77,22 @@ int main(){
         _delay_ms(100);
         distance_sensor_update_status();
         if(cnt >= 10){
+
             cnt = 0;
             distance_sensor_get_status(&ds1_status);
         } else 
             cnt++;
         serial_data_uint8("DS1 status:", &ds1_status, 1);
         // iccm_send("D11111112222222");
-        if(iccm_is_data_available()){
-            iccm_read_rx_buffer();
-        }
+        // if(iccm_is_data_available()){
+        //     iccm_read_rx_buffer();
+        // }
+        // _delay_us(200);
+        // iccm_send("D11111112222222");
+        // if(iccm_is_data_available()){
+            // iccm_read_rx_buffer();
+        // }
+        logic();
     }
     return 0;
 }
