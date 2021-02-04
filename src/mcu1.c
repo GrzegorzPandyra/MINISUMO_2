@@ -17,9 +17,12 @@
 #include <util/delay.h>
 #include "serial_tx.h"
 #include "ISR.h"
-#include "iccm.h"
+#include "ICCM.h"
+#include "distance_sensor.h"
 #include "line_sensor.h"
+#include "ADC.h"
 
+#include "stdio.h"
 void set_debug_pin(){
     PORTC |= 1<<PC3;
 }
@@ -36,13 +39,13 @@ void logic(){
         clear_debug_pin();
     
     if(ls_status & 0x01 && ls_status & 0x02)
-        iccm_send("b");
+        ICCM_send("b");
     else if(ls_status & 0x04 && ls_status & 0x08)
-        iccm_send("f");
+        ICCM_send("f");
     else if(ls_status & 0x01 && ls_status & 0x08)
-        iccm_send("l");
+        ICCM_send("l");
     else if(ls_status & 0x02 && ls_status & 0x04)
-        iccm_send("r");
+        ICCM_send("r");
 }
 
 /**
@@ -50,19 +53,22 @@ void logic(){
  */ 
 int main(){
     serial_init(F_CPU, BAUD);
-    iccm_init();
+    ICCM_init();
+    ADC_init();
     sei();
     DDRB |= 0x01;
     DDRC |= 1<<PC3;
     serial_info_P(MCU1_ONLINE);
-    while(1) /* Loop the messsage continously */
+    while(1)
     { 
-        // _delay_us(200);
         // iccm_send("D11111112222222");
         // if(iccm_is_data_available()){
-            // iccm_read_rx_buffer();
+        //     iccm_read_rx_buffer();
         // }
-        logic();
+        // logic();
+        char str[5];
+        sprintf(str, "%d", distance_sensor_get_status());
+        serial_data_str("Final ", str, 4);
     }
     return 0;
 }

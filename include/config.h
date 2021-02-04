@@ -6,6 +6,7 @@
 #define BAUD 9600
 #define MYUBRR F_CPU/16/BAUD-1
 
+/* Inter-Chip Communication Manager setup*/
 #define ICCM_RX PD2
 #define ICCM_TX PD3
 #define ICCM_DELAY_US 30
@@ -17,8 +18,8 @@
     {"clrtx", serial_clear_tx_buffer}, \
     {"rdrx", serial_read_rx_buffer}, \
     {"clrrx", serial_clear_rx_buffer}, \
-    {"iccmdis", iccm_disable}, \
-    {"iccmen", iccm_enable} 
+    {"iccmdis", ICCM_disable}, \
+    {"iccmen", ICCM_enable} 
 
 #ifdef MCU1
 /* Line sensor pins*/
@@ -26,6 +27,11 @@
 #define LS2 PD5
 #define LS3 PD6
 #define LS4 PD7
+
+/* distance sensor config */
+#define DS1 PC0
+#define DS2 PC1
+#define NUM_DISTANCE_SENSORS 1
 
 #define MCU_SPECIFIC_SERIAL_CMD_LIST \
 
@@ -57,8 +63,5 @@
     {"drvstop", drive_ctrl_stop}
 
 #endif
-
-
-
 
 #endif /* CONFIG_GUARD */

@@ -5,13 +5,11 @@
 */
 #include <stdint.h>
 #include <stdbool.h>
-/* Local macro definitions */
+
 #define ICCM_START_BIT 1
 #define ICCM_DATA_SIZE 8
 #define ICCM_STOP_BIT  1
 #define ICCM_FRAME_SIZE (ICCM_START_BIT+ICCM_DATA_SIZE+ICCM_STOP_BIT)
-/* Local macro-like functions */
-/* Local static variables */
 
 /**
  * @brief Status describing ICCM state - if data is being transmitted, received or nothing is happening.
@@ -35,17 +33,15 @@ typedef union ICCM_DataFrame_Tag{
     }struct_bits;
 }ICCM_DataFrame_T;
 
-/* Global variables */
-/* Local static functions */
 /* Global functions */
-void iccm_init(void);
-void iccm_send(char *str);
-void iccm_read_rx_buffer(char *buff_out, uint8_t *data_length);
-void iccm_on_rx_trigger(void);
-bool iccm_is_data_available(void);
-void iccm_clear_rx_buffer(void);
-void iccm_disable(void);
-void iccm_enable(void);
+void ICCM_init(void);
+void ICCM_send(char *str);
+void ICCM_read_rx_buffer(char *buff_out, uint8_t *data_length);
+void ICCM_on_rx_trigger(void);
+bool ICCM_is_data_available(void);
+void ICCM_clear_rx_buffer(void);
+void ICCM_disable(void);
+void ICCM_enable(void);
 #endif /* ICCM_GUARD */
 
 

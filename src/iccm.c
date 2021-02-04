@@ -2,7 +2,7 @@
     @brief Inter-Chip Communication Manager
 */
 
-#include "iccm.h"
+#include "ICCM.h"
 #include "config.h"
 #include <util/delay.h>
 #include <avr/io.h>
@@ -136,7 +136,7 @@ static char read_byte_on_pin(){
  * This module requires followind #defines to be created:
  * ICCM_RX, ICCM_TX, ICCM_DELAY_US
  */
-void iccm_init(void){
+void ICCM_init(void){
     /* configure INT0 to activate on rising edge  */
     MCUCR |= SB(ISC01) | SB(ISC00);
     /* enable INT0 */
@@ -155,7 +155,7 @@ void iccm_init(void){
  * Data is appended with start character STX (0x02) and end character ETX (0x03)
  * @param str String to be send
  */
-void iccm_send(char *str){
+void ICCM_send(char *str){
     iccm_status = TX_IN_PROGRESS;
     uint8_t str_len = cstrlen(str);
     // serial_data_str_P(ICCM_SENDING_DATA, str, str_len);
@@ -176,19 +176,19 @@ void iccm_send(char *str){
 /**
  * @brief Reads the contents of rx_buffer and clears it.
  */
-void iccm_read_rx_buffer(char *buff_out, uint8_t *data_length){
+void ICCM_read_rx_buffer(char *buff_out, uint8_t *data_length){
     uint8_t str_len = cstrlen(rx_buffer);
     if(str_len > 0){
         memcpy(buff_out, rx_buffer, str_len);
         *data_length = str_len;
-        iccm_clear_rx_buffer();
+        ICCM_clear_rx_buffer();
     }
 }
 
 /**
  * @brief Checks if rx_buffer has received any data
  */
-bool iccm_is_data_available(void){
+bool ICCM_is_data_available(void){
     return rx_complete;
 } 
 
@@ -196,7 +196,7 @@ bool iccm_is_data_available(void){
  * @brief Local RX ISR handler
  * STX indicates start of data, ETX indicates the end. If no STX is received, then received data is invalid. If TX is in progress, ISR is disregarded.
  */
-void iccm_on_rx_trigger(void){
+void ICCM_on_rx_trigger(void){
     if(iccm_status == TX_IN_PROGRESS || iccm_status == DISABLED)
         return;
  
@@ -207,7 +207,7 @@ void iccm_on_rx_trigger(void){
     case STX:
         iccm_status = RX_IN_PROGRESS;
         stx_received = true;
-        iccm_clear_rx_buffer();
+        ICCM_clear_rx_buffer();
         break;
     case ETX:
         if(stx_received){
@@ -227,16 +227,16 @@ void iccm_on_rx_trigger(void){
 /**
  * @brief Buffer is considered "clear" when head points to buffer start and has value of NULL_CHAR
  */
-void iccm_clear_rx_buffer(void){
+void ICCM_clear_rx_buffer(void){
     rx_complete = false;
     rx_buffer_head = rx_buffer;
     *rx_buffer_head = NULL_CHAR;
 }
 
-void iccm_disable(void){
+void ICCM_disable(void){
     iccm_status = DISABLED;
 }
 
-void iccm_enable(void){
+void ICCM_enable(void){
     iccm_status = IDLE;
 }
