@@ -14,6 +14,10 @@
 #include "drive_ctrl.h"
 #endif
 
+#ifdef MCU1
+#include "distance_sensor.h"
+#endif
+
 /**
  * @brief Interrupt routine for USART receive complete bit
  * Reads a single character from UDR and calls function handle this data
@@ -35,6 +39,13 @@ ISR(INT0_vect){
 #ifdef MCU2
 ISR(TIMER0_OVF_vect){  
     drive_ctrl_PWM();
+}  
+#endif
+
+#ifdef MCU1
+ISR(ADC_vect){  
+    distance_sensor_update_status();
+    // ADCSRA &= ~(1<<ADIF);
 }  
 #endif
 

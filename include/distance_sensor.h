@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "config.h"
 
-void distance_sensor_update_status();
-void distance_sensor_get_status(uint8_t *results);
+void distance_sensor_update_status(void);
+uint8_t distance_sensor_get_status(void);
 
 #endif /* DISTANCE_SENSOR_GUARD */

@@ -22,16 +22,23 @@
 #include "line_sensor.h"
 
 void adc_init(){
-    /* Enable ADC*/
-    ADCSRA |= 1<<ADEN;
+    /* Set DS1 pin as input */
+    DDRC &= ~(1<<DS1);
+    PORTC &= ~(1<<DS1);
+    /* Set prescaler to 128 */
+    ADCSRA |= 1<<ADPS0 | 1<<ADPS1 | 1<<ADPS2;
     /* Enable Free Running mode*/
     ADCSRA |= 1<<ADFR;
-    /* Trigger initial conversion */
-    ADCSRA |= 1<<ADSC;
     /* Internal 2.56V voltage ref */
-    ADMUX |= (1<<REFS1)|(1<<REFS0);
+    ADMUX |= (1<<REFS0);
     /* Set ADC channel to match DS1 */
     ADMUX &= 0xF0;
+    /* Enable interrupt on ADC conversion finished */
+    ADCSRA |= 1<<ADIE;
+    /* Enable ADC*/
+    ADCSRA |= 1<<ADEN;
+    /* Trigger initial conversion */
+    ADCSRA |= 1<<ADSC;
 }   
 
 void set_debug_pin(){
@@ -74,15 +81,9 @@ int main(){
     uint8_t ds1_status = 0;
     while(1) /* Loop the messsage continously */
     { 
-        _delay_ms(100);
-        distance_sensor_update_status();
-        if(cnt >= 10){
-
-            cnt = 0;
-            distance_sensor_get_status(&ds1_status);
-        } else 
-            cnt++;
-        serial_data_uint8("DS1 status:", &ds1_status, 1);
+        // _delay_ms(100);
+        // ds1_status = distance_sensor_get_status();
+        // serial_data_uint8("DS1 status:", &ds1_status, 1);
         // iccm_send("D11111112222222");
         // if(iccm_is_data_available()){
         //     iccm_read_rx_buffer();
@@ -92,7 +93,7 @@ int main(){
         // if(iccm_is_data_available()){
             // iccm_read_rx_buffer();
         // }
-        logic();
+        // logic();
     }
     return 0;
 }

@@ -28,6 +28,11 @@
 #define LS3 PD6
 #define LS4 PD7
 
+/* distance sensor config */
+#define DS1 PC0
+#define DS2 PC1
+#define NUM_DISTANCE_SENSORS 1
+
 #define MCU_SPECIFIC_SERIAL_CMD_LIST \
 
 #endif
@@ -58,13 +63,5 @@
     {"drvstop", drive_ctrl_stop}
 
 #endif
-
-
-
-
-/* distance sensor config */
-#define DS1 PC0
-#define DS2 PC1
-#define NUM_DISTANCE_SENSORS 1
 
 #endif /* CONFIG_GUARD */
