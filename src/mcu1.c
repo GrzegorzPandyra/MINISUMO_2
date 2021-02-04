@@ -17,30 +17,12 @@
 #include <util/delay.h>
 #include "serial_tx.h"
 #include "ISR.h"
-#include "iccm.h"
+#include "ICCM.h"
 #include "distance_sensor.h"
 #include "line_sensor.h"
+#include "ADC.h"
 
-void adc_init(){
-    /* Set DS1 pin as input */
-    DDRC &= ~(1<<DS1);
-    PORTC &= ~(1<<DS1);
-    /* Set prescaler to 128 */
-    ADCSRA |= 1<<ADPS0 | 1<<ADPS1 | 1<<ADPS2;
-    /* Enable Free Running mode*/
-    ADCSRA |= 1<<ADFR;
-    /* Internal 2.56V voltage ref */
-    ADMUX |= (1<<REFS0);
-    /* Set ADC channel to match DS1 */
-    ADMUX &= 0xF0;
-    /* Enable interrupt on ADC conversion finished */
-    ADCSRA |= 1<<ADIE;
-    /* Enable ADC*/
-    ADCSRA |= 1<<ADEN;
-    /* Trigger initial conversion */
-    ADCSRA |= 1<<ADSC;
-}   
-
+#include "stdio.h"
 void set_debug_pin(){
     PORTC |= 1<<PC3;
 }
@@ -57,13 +39,13 @@ void logic(){
         clear_debug_pin();
     
     if(ls_status & 0x01 && ls_status & 0x02)
-        iccm_send("b");
+        ICCM_send("b");
     else if(ls_status & 0x04 && ls_status & 0x08)
-        iccm_send("f");
+        ICCM_send("f");
     else if(ls_status & 0x01 && ls_status & 0x08)
-        iccm_send("l");
+        ICCM_send("l");
     else if(ls_status & 0x02 && ls_status & 0x04)
-        iccm_send("r");
+        ICCM_send("r");
 }
 
 /**
@@ -71,29 +53,22 @@ void logic(){
  */ 
 int main(){
     serial_init(F_CPU, BAUD);
-    iccm_init();
-    adc_init();
+    ICCM_init();
+    ADC_init();
     sei();
     DDRB |= 0x01;
     DDRC |= 1<<PC3;
     serial_info_P(MCU1_ONLINE);
-    uint8_t cnt = 0;
-    uint8_t ds1_status = 0;
-    while(1) /* Loop the messsage continously */
+    while(1)
     { 
-        // _delay_ms(100);
-        // ds1_status = distance_sensor_get_status();
-        // serial_data_uint8("DS1 status:", &ds1_status, 1);
         // iccm_send("D11111112222222");
         // if(iccm_is_data_available()){
         //     iccm_read_rx_buffer();
         // }
-        // _delay_us(200);
-        // iccm_send("D11111112222222");
-        // if(iccm_is_data_available()){
-            // iccm_read_rx_buffer();
-        // }
         // logic();
+        char str[5];
+        sprintf(str, "%d", distance_sensor_get_status());
+        serial_data_str("Final ", str, 4);
     }
     return 0;
 }

@@ -18,8 +18,8 @@
     {"clrtx", serial_clear_tx_buffer}, \
     {"rdrx", serial_read_rx_buffer}, \
     {"clrrx", serial_clear_rx_buffer}, \
-    {"iccmdis", iccm_disable}, \
-    {"iccmen", iccm_enable} 
+    {"iccmdis", ICCM_disable}, \
+    {"iccmen", ICCM_enable} 
 
 #ifdef MCU1
 /* Line sensor pins*/

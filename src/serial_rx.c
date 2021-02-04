@@ -9,7 +9,7 @@
 #include "common_const.h"
 #include "serial_rx.h"
 #include "serial_tx.h"
-#include "iccm.h"
+#include "ICCM.h"
 #include "config.h"
 #include "drive_ctrl.h"
 

@@ -17,7 +17,7 @@
 #include <util/delay.h>
 #include "serial_tx.h"
 #include "ISR.h"
-#include "iccm.h"
+#include "ICCM.h"
 #include "drive_ctrl.h"
 
 void set_debug_pin(){
@@ -31,8 +31,8 @@ void clear_debug_pin(){
 void drv_logic(){
     static char rx_buff[20];
     static uint8_t data_length = 0;
-    if(iccm_is_data_available()){
-        iccm_read_rx_buffer(rx_buff, &data_length);
+    if(ICCM_is_data_available()){
+        ICCM_read_rx_buffer(rx_buff, &data_length);
         serial_data_str("dt",rx_buff, data_length);
     }
 
@@ -57,7 +57,7 @@ void drv_logic(){
 int main(){
     // char data[] = "Hello from MCU2";
     serial_init(F_CPU, BAUD);
-    iccm_init();
+    ICCM_init();
     sei();
     DDRB |= 0x01;
     DDRB |= 1<<PB2;

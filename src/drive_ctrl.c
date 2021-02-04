@@ -11,7 +11,7 @@
 #include "config.h"
 #include "common_const.h"
 #include "serial_tx.h"
-#include "iccm.h"
+#include "ICCM.h"
 
 #define CB(x) (~(1<<x))
 #define SB(x) (1<<x)
