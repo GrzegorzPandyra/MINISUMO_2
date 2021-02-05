@@ -8,6 +8,7 @@
 #include <avr/io.h>
 #include "serial_tx.h"
 #include "string.h"
+#include "ICCM_message_catalog.h"
 
 /* Local macro definitions */
 #define ICCM_RX_BUFFER_SIZE 20
