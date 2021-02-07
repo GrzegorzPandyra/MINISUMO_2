@@ -182,6 +182,7 @@ void ICCM_read_rx_buffer(char *buff_out, uint8_t *data_length){
     if(str_len > 0){
         memcpy(buff_out, rx_buffer, str_len);
         *data_length = str_len;
+        serial_data_str("",rx_buffer,str_len);
         ICCM_clear_rx_buffer();
     }
 }

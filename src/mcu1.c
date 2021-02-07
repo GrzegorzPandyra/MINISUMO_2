@@ -17,17 +17,6 @@
 #include "AI.h"
 
 #include "stdio.h"
-void logic(){
-    uint8_t ls_status = line_sensor_get_status();
-    if(ls_status & 0x01 && ls_status & 0x02)
-        ICCM_send("b");
-    else if(ls_status & 0x04 && ls_status & 0x08)
-        ICCM_send("f");
-    else if(ls_status & 0x01 && ls_status & 0x08)
-        ICCM_send("l");
-    else if(ls_status & 0x02 && ls_status & 0x04)
-        ICCM_send("r");
-}
 
 /**
  * @brief Main function
@@ -40,8 +29,12 @@ int main(){
     serial_info_P(MCU1_ONLINE);
     uint16_t DS_reading = 0;
     uint8_t LS_readings = 0;
+    _delay_ms(5000);
+    AI_init();
+    serial_info("READY");
     while(1)
     { 
+        _delay_ms(5);
         DS_reading = distance_sensor_get_status();
         LS_readings = line_sensor_get_status();
         AI_run(LS_readings, DS_reading);
