@@ -13,9 +13,22 @@
 #define MAX_UART_DATA_LENGTH 100
 #define TX_BUFFER_SIZE       300
 #define MSG_SRC_LENGTH       8
+#define MSG_TYPE_LENGTH      8
+#define MSG_TYPES_NUM        4
 #define DECIMAL              10
 #define UINT32_MAX_DIGITS    10
 #define OMIT_SLASH 1
+#define PROGMEM_BUFF_SIZE           30
+#define DATA_CONVERSION_BUFFER_SIZE 30
+
+/**
+ * @brief Marker used to determine if logs should be passed directly to UDR 
+ * or stored in TX buffer until explicitly moved to UDR
+ */
+typedef enum Data_Target_Tag{
+    T_UDR = 0,
+    T_TX_BUFFER = 1
+} Data_Target_T;
 
 /* Literals kept in codeflash for logging               0|                             |29*/
 static const char TX_BUFFER_OVERFLOW_P[]       PROGMEM = "TX buffer overflow!";
@@ -30,14 +43,16 @@ static const char ICCM_RX_BUFFER_OVERFLOW_P[]  PROGMEM = "ICCM RX BUFFER OVERFLO
 static const char ICCM_RX_BUFFER_CLEARED_P[]   PROGMEM = "ICCM RX BUFFER cleared";
 
 
+
 /* Local macro-like functions */
 /* Local static variables */
+static const char msg_type_str[MSG_TYPES_NUM][MSG_TYPE_LENGTH] = {"INFO", "WARNING", "ERROR", "DATA"};
 static char tx_buffer[TX_BUFFER_SIZE] = {0};
 static char *tx_buffer_head = tx_buffer;
 static Data_Target_T data_destination = T_UDR;
 
 /* Global variables */
-char progmem_buffer[PROGMEM_BUFF_SIZE] = {0};
+char data_conversion_buffer[DATA_CONVERSION_BUFFER_SIZE] = {0};
 const char* progmem_string_table[] PROGMEM = {
     TX_BUFFER_OVERFLOW_P, 
     LOG_BUFFERING_ENABLED_P,
@@ -143,7 +158,6 @@ static void print_msg_src(const char *src){
  * @param msg_type Enum indicating the type
  */
 static void print_msg_type(Log_Type_T msg_type){
-    const char msg_type_str[4][8] = {"INFO", "WARNING", "ERROR", "DATA"};
     uint8_t i = 0;
 
     while( msg_type_str[(uint8_t)msg_type][i] != NULL_CHAR){
@@ -190,7 +204,7 @@ static void show_tx_buffer_overflow_error(void){
         serial_disable_buffering();
     
     to_udr(NEWLINE_CHAR);
-    serial_err_P(TX_BUFFER_OVERFLOW);
+    log_err_P(TX_BUFFER_OVERFLOW);
     
     if(is_buffering_enabled)
         serial_enable_buffering();
@@ -247,46 +261,11 @@ void serial_log(const Log_Metadata_T metadata, const char *str){
     }
 }
 
-
-/**
- * @brief Send variable amount of raw data
- * Sends data under data.data pointer as a series if integers or characters. Function cuts into normal operation of serial_log()
- * and prints data between str and final newline character
- * @param data Structure containing data to be send
- */
-void serial_log_data(const Log_Metadata_T metadata, const char *str, Data_T data)
-{
-    serial_log(metadata, str);
-    process_char(SPACE_CHAR);
-    char buff[UINT32_MAX_DIGITS] = {0};
-    for(uint16_t i = 0; i<data.data_length && i<MAX_UART_DATA_LENGTH; i++){
-        switch(data.data_type){
-            case INT:
-                sprintf(buff, "%d", *( (int*)data.data + i) );
-                print_msg_data(buff);
-                buff[0] = NULL_CHAR;
-                break;
-            case UINT8:
-                sprintf(buff, "%d", *( (uint8_t*)data.data + i) );
-                print_msg_data(buff);
-                buff[0] = NULL_CHAR;
-                break;
-            case STRING:
-                process_char( *( (char*)data.data + i) );
-                break;
-            default:
-                /*Do nothing*/
-                break;
-        }
-    }
-    process_char(NEWLINE_CHAR);
-}
-
 /**
  * @brief Enable data buffering
  */
 void serial_enable_buffering(void){
-    // serial_info_P(LOG_BUFFERING_ENABLED);
+    // log_info_P(LOG_BUFFERING_ENABLED);
     data_destination = T_TX_BUFFER;
 }
 
@@ -296,7 +275,7 @@ void serial_enable_buffering(void){
     
 void serial_disable_buffering(void){
     data_destination = T_UDR;
-    // serial_info_P(LOG_BUFFERING_DISABLED);
+    // log_info_P(LOG_BUFFERING_DISABLED);
 }
 
 /**

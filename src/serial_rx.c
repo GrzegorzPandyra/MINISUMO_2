@@ -65,7 +65,7 @@ static const Cmd_Record_T* find_cmd(const char *cmd){
             return &(cmd_list[i]);
         }
     }
-    serial_err_P(CMD_NOT_FOUND);
+    log_err_P(CMD_NOT_FOUND);
     return NULL;
 }
 
