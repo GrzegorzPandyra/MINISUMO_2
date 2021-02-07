@@ -45,6 +45,8 @@
         }  
     #endif
 
+    
+
     #ifdef MCU1
         /**
          * @brief Interrupt routine executed when ADC completes conversion
@@ -52,6 +54,20 @@
         ISR(ADC_vect){  
             volatile uint16_t adc_val = ADCW;
             distance_sensor_update_status(adc_val);
+        }
+
+        /**
+         * @brief
+         */
+        ISR(TIMER0_OVF_vect){  
+            static uint8_t cnt = 0;
+            if(cnt >= 5){
+                /* Trigger ADC conversion */
+                ADCSRA |= 1<<ADSC;
+                cnt = 0;
+            } else {
+                ++cnt;
+            }
         }
     #endif
 

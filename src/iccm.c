@@ -8,6 +8,7 @@
 #include <avr/io.h>
 #include "serial_tx.h"
 #include "string.h"
+#include "ICCM_message_catalog.h"
 
 /* Local macro definitions */
 #define ICCM_RX_BUFFER_SIZE 20
@@ -181,6 +182,7 @@ void ICCM_read_rx_buffer(char *buff_out, uint8_t *data_length){
     if(str_len > 0){
         memcpy(buff_out, rx_buffer, str_len);
         *data_length = str_len;
+        serial_data_str("",rx_buffer,str_len);
         ICCM_clear_rx_buffer();
     }
 }

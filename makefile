@@ -24,15 +24,16 @@ CFLAGS=-I $(INC_DIR) -Wall -Os -std=c99
 MCU1_SRC_LIST = $(SRC_DIR)/mcu1.c \
 		   		$(SRC_DIR)/serial_tx.c \
 		   		$(SRC_DIR)/serial_rx.c \
-		   		$(SRC_DIR)/iccm.c \
+		   		$(SRC_DIR)/ICCM.c \
 		   		$(SRC_DIR)/distance_sensor.c \
 		   		$(SRC_DIR)/line_sensor.c \
 		   		$(SRC_DIR)/ADC.c \
+		   		$(SRC_DIR)/AI.c \
 
 MCU2_SRC_LIST = $(SRC_DIR)/mcu2.c \
 		   		$(SRC_DIR)/serial_tx.c \
 		   		$(SRC_DIR)/serial_rx.c \
-		   		$(SRC_DIR)/iccm.c \
+		   		$(SRC_DIR)/ICCM.c \
 		   		$(SRC_DIR)/drive_ctrl.c \
 
 #make all rule

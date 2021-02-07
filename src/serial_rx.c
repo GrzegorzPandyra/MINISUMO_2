@@ -16,9 +16,6 @@
 /* Local macro definitions */
 #define RX_BUFFER_SIZE 10
 
-/* Local functions and macro-like functions */
-#define arr_length(arr) (sizeof(arr)/sizeof(arr[0]))
-
 /* Local type definitions */
 /**
  * @brief Structure binding cmd to a callback, used during rx_buffer parsing
