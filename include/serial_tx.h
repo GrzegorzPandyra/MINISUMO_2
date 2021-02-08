@@ -7,8 +7,9 @@
 */
 #include <stdint.h>
 #include <stdbool.h>
-#include <avr/pgmspace.h>
 #include <stdio.h>
+#include <avr/pgmspace.h>
+#include <serial_progmem.h>
 
 /**
  * @brief Describes the type of log being send.
@@ -29,7 +30,7 @@ typedef struct Log_Metadata_Tag{
     const Log_Type_T log_type;
 } Log_Metadata_T;
 
-/* Local macro-like functions */
+/** Logging API */
 #define copy_to_ram(id)     (strcpy_P(data_conversion_buffer, (char*)pgm_read_word(&progmem_string_table[id])))
 #define get_metadata(type)  (Log_Metadata_T){__FILE__, __LINE__, type}
 
@@ -60,22 +61,7 @@ typedef struct Log_Metadata_Tag{
                                                                             serial_log(get_metadata(INFO), data_conversion_buffer)
 #define log_data_8(format, arg1, arg2, arg3, arg4, arg5,arg6, arg7, arg8)   sprintf(data_conversion_buffer, format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);\
                                                                             serial_log(get_metadata(INFO), data_conversion_buffer)                                                                           
-                                                                                                                    
-#define TX_BUFFER_OVERFLOW      0 
-#define LOG_BUFFERING_ENABLED   1 
-#define LOG_BUFFERING_DISABLED  2 
-#define MCU1_ONLINE             3 
-#define MCU2_ONLINE             4 
-#define CMD_NOT_FOUND           5
-#define ICCM_SENDING_DATA       6
-#define ICCM_RX_BUFFER_DATA     7
-#define ICCM_RX_BUFFER_OVERFLOW 8
-#define ICCM_RX_BUFFER_CLEARED  9
-
-/* Global variables */
-extern const char* progmem_string_table[];
-extern char data_conversion_buffer[];
-/* Global functions */
+                                                                                       
 void serial_init(uint32_t f_cpu, uint32_t baudrate);
 void serial_log(const Log_Metadata_T metadata, const char *str);
 bool serial_is_tx_buffer_full(void);
