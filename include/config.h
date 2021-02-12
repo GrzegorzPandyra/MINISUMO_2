@@ -33,6 +33,7 @@
 #define DS2 PC1
 #define NUM_DISTANCE_SENSORS 1
 
+/* Cmds specific to MCU1*/
 #define MCU_SPECIFIC_SERIAL_CMD_LIST \
 
 #endif
@@ -52,6 +53,7 @@
 #define M4_IN2 PB0
 #define M4_PWM PB1
 
+/* Cmds specific to MCU2*/
 #define MCU_SPECIFIC_SERIAL_CMD_LIST \
     {"drvinit", drive_ctrl_init}, 
 

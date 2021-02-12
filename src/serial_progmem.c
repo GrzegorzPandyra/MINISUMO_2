@@ -1,5 +1,6 @@
 /** @file serial_progmem.c
 *   @brief Definitions of objects used by PROGMEM 
+    PROGMEM macro marks objects that are stored in MCU's flash memory (instead of RAM, which is very limited).
 */
 #include <avr/pgmspace.h>
 
