@@ -23,7 +23,7 @@ int main(){
     sei();
     DDRB |= 0x01;
     DDRB |= 1<<PB2;
-    serial_info_P(MCU2_ONLINE);
+    log_info_P(MCU2_ONLINE);
     drive_ctrl_init();
 
     while(1) /* Loop the messsage continously */

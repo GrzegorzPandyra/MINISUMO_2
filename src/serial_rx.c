@@ -13,10 +13,8 @@
 #include "config.h"
 #include "drive_ctrl.h"
 
-/* Local macro definitions */
 #define RX_BUFFER_SIZE 10
 
-/* Local type definitions */
 /**
  * @brief Structure binding cmd to a callback, used during rx_buffer parsing
  */
@@ -34,7 +32,6 @@ const Cmd_Record_T cmd_list[] = {
 };
 
 
-/* Global variables */
 /* Local static functions */
 static bool to_rx_buffer(const char c);
 static void to_udr(const unsigned char c);
@@ -65,7 +62,7 @@ static const Cmd_Record_T* find_cmd(const char *cmd){
             return &(cmd_list[i]);
         }
     }
-    serial_err_P(CMD_NOT_FOUND);
+    log_err_P(CMD_NOT_FOUND);
     return NULL;
 }
 
@@ -112,7 +109,6 @@ void serial_on_receive(const char c){
 void serial_read_rx_buffer(void){
     if(rx_buffer_head != rx_buffer){
         char *rx_buffer_head_ptr = rx_buffer;
-
         while(rx_buffer_head_ptr < rx_buffer_head){
             to_udr(*rx_buffer_head_ptr++);
         }
