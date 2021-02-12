@@ -28,6 +28,8 @@
 #define LS3 PD6
 #define LS4 PD7
 
+#define MASTER_INIT PC3
+
 /* distance sensor config */
 #define DS1 PC0
 #define DS2 PC1

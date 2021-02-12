@@ -15,6 +15,17 @@
     #define ICCM_RX_BUFFER_DATA     7
     #define ICCM_RX_BUFFER_OVERFLOW 8
     #define ICCM_RX_BUFFER_CLEARED  9
+    #define AI_STATUS_IDLE          10
+    #define AI_STATUS_ARMED         11
+    #define AI_STATUS_SEARCH        12
+    #define AI_STATUS_ATTACK        13
+    #define AI_STATUS_R2R           14
+    #define AI_FORCED_STOP_P        15
+    #define AI_INIT_IN_5            16
+    #define AI_INIT_IN_4            17
+    #define AI_INIT_IN_3            18
+    #define AI_INIT_IN_2            19
+    #define AI_INIT_IN_1            20
 
     /* Global variables */
     extern char data_conversion_buffer[];
