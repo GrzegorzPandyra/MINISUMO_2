@@ -137,7 +137,9 @@ void drive_ctrl_turn_left(void){
 }
 
 void drive_ctrl_init(void){
+    log_info_P(DRV_CTRL_INIT);
     timer0_init(); 
+
     /*motor 1*/
     DDRC |= SB(M1_IN1);
     DDRC |= SB(M1_IN2);
@@ -233,4 +235,10 @@ void drive_ctrl_run(void){
             break;
         }
     }
+}
+
+void drive_ctrl_set_pwm_cbk(const void *data, size_t data_len){
+    log_data_1("data_len = %d", data_len);
+    log_data_1("data = %s", (const char *)data);
+
 }

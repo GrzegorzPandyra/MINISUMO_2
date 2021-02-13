@@ -12,14 +12,14 @@
 #define ICCM_DELAY_US 30
 
 #define COMMON_SERIAL_CMD_LIST \
-    {"enbuff", serial_enable_buffering}, \
-    {"disbuff", serial_disable_buffering}, \
-    {"rdtx", serial_read_tx_buffer}, \
-    {"clrtx", serial_clear_tx_buffer}, \
-    {"rdrx", serial_read_rx_buffer}, \
-    {"clrrx", serial_clear_rx_buffer}, \
-    {"iccmdis", ICCM_disable}, \
-    {"iccmen", ICCM_enable} 
+    {"enbuff", serial_enable_buffering, NULL}, \
+    {"disbuff", serial_disable_buffering, NULL}, \
+    {"rdtx", serial_read_tx_buffer, NULL}, \
+    {"clrtx", serial_clear_tx_buffer, NULL}, \
+    {"rdrx", serial_read_rx_buffer, NULL}, \
+    {"clrrx", serial_clear_rx_buffer, NULL}, \
+    {"iccmdis", ICCM_disable, NULL}, \
+    {"iccmen", ICCM_enable, NULL} 
 
 #ifdef MCU1
 /* Line sensor pins*/
@@ -28,6 +28,7 @@
 #define LS3 PD6
 #define LS4 PD7
 
+/* AI init btn */
 #define MASTER_INIT PC3
 
 /* distance sensor config */
@@ -57,7 +58,8 @@
 
 /* Cmds specific to MCU2*/
 #define MCU_SPECIFIC_SERIAL_CMD_LIST \
-    {"drvinit", drive_ctrl_init}, 
+    {"drvinit", drive_ctrl_init, NULL}, \
+    {"drvpwm", NULL, drive_ctrl_set_pwm_cbk} \
 
 #endif
 

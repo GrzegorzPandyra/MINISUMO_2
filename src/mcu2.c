@@ -20,11 +20,9 @@ int main(){
     // char data[] = "Hello from MCU2";
     serial_init(F_CPU, BAUD);
     ICCM_init();
-    sei();
-    DDRB |= 0x01;
-    DDRB |= 1<<PB2;
-    log_info_P(MCU2_ONLINE);
     drive_ctrl_init();
+    sei();
+    log_info_P(MCU2_ONLINE);
 
     while(1) /* Loop the messsage continously */
     { 

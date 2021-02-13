@@ -6,6 +6,7 @@
 void drive_ctrl_init(void);
 void drive_ctrl_PWM(void);
 void drive_ctrl_run(void);
+void drive_ctrl_set_pwm_cbk(const void *data, size_t data_len);
 #endif /* DRIVE_CONTROL_GUARD */
 
 

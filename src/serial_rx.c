@@ -13,14 +13,17 @@
 #include "config.h"
 #include "drive_ctrl.h"
 
-#define RX_BUFFER_SIZE 10
+
+#define CMD_NAME_LENGTH 7
+#define RX_BUFFER_SIZE 12 /* 7 chars for cmd, 1 space, 3 chars for arg, NULL */
 
 /**
  * @brief Structure binding cmd to a callback, used during rx_buffer parsing
  */
 typedef struct Cmd_Record_Tag{
     char string[RX_BUFFER_SIZE];
-    void (*callback)();
+    void (*direct_callback)();
+    void (*custom_callback)(const void *data, size_t data_len);
 } Cmd_Record_T;
 
 /* Local static variables */
@@ -57,8 +60,22 @@ static bool to_rx_buffer(const char c){
  * @param cmd string to be matched in cmd_list
  */
 static const Cmd_Record_T* find_cmd(const char *cmd){
+    const char *first_space = strchr(cmd, SPACE_CHAR);
+    char cmd_name[CMD_NAME_LENGTH] = {};
+
+    if(first_space != NULL){
+        memcpy((void *)cmd_name, (const void*)cmd, (size_t)(first_space-cmd));
+        cmd_name[first_space-cmd] = NULL_CHAR;
+        // log_info("Argged cmd");
+    } else {
+        strcpy(cmd_name, cmd);
+        // log_info("Usual cmd");
+    }
+
     for(uint8_t i = 0; i < arr_length(cmd_list); i++){
-        if(0 == strcmp(cmd_list[i].string, cmd)){
+        // log_data_1("i=%d", i);
+        if(0 == strcmp(cmd_list[i].string, cmd_name)){
+            // log_data_1("winner i=%d", i);
             return &(cmd_list[i]);
         }
     }
@@ -95,7 +112,15 @@ void serial_on_receive(const char c){
     if(c == LF || c == CR) {
         const Cmd_Record_T *cmd_record = find_cmd(rx_buffer);
         if(cmd_record != NULL){
-            cmd_record->callback();
+            // log_info("cmd rec not null");
+            if(cmd_record->direct_callback != NULL){
+                // log_info("dir cbk not null");
+                cmd_record->direct_callback();
+            } else {
+                // log_info("cust cbk not null");
+                cmd_record->custom_callback(rx_buffer, (size_t)(rx_buffer_head - rx_buffer));
+                // log_data_1("ile to jest %d",(uint8_t)(rx_buffer_head - rx_buffer));
+            }
         }
         serial_clear_rx_buffer();
     } else {

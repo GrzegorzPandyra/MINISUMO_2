@@ -31,7 +31,7 @@ typedef struct Log_Metadata_Tag{
 } Log_Metadata_T;
 
 /** Logging API */
-#define copy_to_ram(id)     (strcpy_P(data_conversion_buffer, (char*)pgm_read_word(&progmem_string_table[id])))
+#define copy_to_ram(id)     (strcpy_P(data_conversion_buffer, (char*)pgm_read_word(&progmem_string_table[(uint8_t)id])))
 #define get_metadata(type)  (Log_Metadata_T){__FILE__, __LINE__, type}
 
 #define log_info(str)   (serial_log( get_metadata(INFO), str ))

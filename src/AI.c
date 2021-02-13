@@ -207,6 +207,6 @@ AI_Status_T AI_get_status(void){
 void AI_force_stop(void){
     get_vector_by_ID(STOP).cbk();
     AI_status = IDLE;
-    log_info_P(AI_FORCED_STOP_P);
+    log_info_P(AI_FORCED_STOP);
     _delay_ms(FORCE_STOP_DELAY_MS);
 }

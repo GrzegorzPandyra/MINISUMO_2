@@ -28,10 +28,14 @@ static const char AI_INIT_IN_4_P[]             PROGMEM = "AI init in 4..";
 static const char AI_INIT_IN_3_P[]             PROGMEM = "AI init in 3..";
 static const char AI_INIT_IN_2_P[]             PROGMEM = "AI init in 2..";
 static const char AI_INIT_IN_1_P[]             PROGMEM = "AI init in 1..";
+static const char DRV_CTRL_INIT_P[]            PROGMEM = "DrvCtrl init";
+static const char ICCM_INIT_P[]                PROGMEM = "ICCM init";
+static const char SERIAL_INIT_P[]              PROGMEM = "Serial init";
+static const char ADC_INIT_P[]                 PROGMEM = "ADC init";
 
 
 
-char data_conversion_buffer[DATA_CONVERSION_BUFFER_SIZE] = {0};
+char data_conversion_buffer[DATA_CONVERSION_BUFFER_SIZE] = {};
 const char* progmem_string_table[] PROGMEM = {
     TX_BUFFER_OVERFLOW_P, 
     LOG_BUFFERING_ENABLED_P,
@@ -53,5 +57,9 @@ const char* progmem_string_table[] PROGMEM = {
     AI_INIT_IN_4_P,
     AI_INIT_IN_3_P,
     AI_INIT_IN_2_P,
-    AI_INIT_IN_1_P
+    AI_INIT_IN_1_P,
+    DRV_CTRL_INIT_P,
+    ICCM_INIT_P,
+    SERIAL_INIT_P,
+    ADC_INIT_P
 };

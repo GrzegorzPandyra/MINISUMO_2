@@ -5,27 +5,33 @@
     */
 
     /** Indexes related to strings stored in progmem_string_table */                                                                                            
-    #define TX_BUFFER_OVERFLOW      0 
-    #define LOG_BUFFERING_ENABLED   1 
-    #define LOG_BUFFERING_DISABLED  2 
-    #define MCU1_ONLINE             3 
-    #define MCU2_ONLINE             4 
-    #define CMD_NOT_FOUND           5
-    #define ICCM_SENDING_DATA       6
-    #define ICCM_RX_BUFFER_DATA     7
-    #define ICCM_RX_BUFFER_OVERFLOW 8
-    #define ICCM_RX_BUFFER_CLEARED  9
-    #define AI_STATUS_IDLE          10
-    #define AI_STATUS_ARMED         11
-    #define AI_STATUS_SEARCH        12
-    #define AI_STATUS_ATTACK        13
-    #define AI_STATUS_R2R           14
-    #define AI_FORCED_STOP_P        15
-    #define AI_INIT_IN_5            16
-    #define AI_INIT_IN_4            17
-    #define AI_INIT_IN_3            18
-    #define AI_INIT_IN_2            19
-    #define AI_INIT_IN_1            20
+    typedef enum Progmem_Table_Index_Tag{
+        TX_BUFFER_OVERFLOW = 0,
+        LOG_BUFFERING_ENABLED,
+        LOG_BUFFERING_DISABLED,
+        MCU1_ONLINE,
+        MCU2_ONLINE,
+        CMD_NOT_FOUND,
+        ICCM_SENDING_DATA,
+        ICCM_RX_BUFFER_DATA,
+        ICCM_RX_BUFFER_OVERFLOW,
+        ICCM_RX_BUFFER_CLEARED,
+        AI_STATUS_IDLE,
+        AI_STATUS_ARMED,
+        AI_STATUS_SEARCH,
+        AI_STATUS_ATTACK,
+        AI_STATUS_R2R,
+        AI_FORCED_STOP,
+        AI_INIT_IN_5,
+        AI_INIT_IN_4,
+        AI_INIT_IN_3,
+        AI_INIT_IN_2,
+        AI_INIT_IN_1,
+        DRV_CTRL_INIT,
+        ICCM_INIT,
+        SERIAL_INIT,
+        ADC_INIT
+    } Progmem_Table_Index_T;
 
     /* Global variables */
     extern char data_conversion_buffer[];
