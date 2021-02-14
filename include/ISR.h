@@ -41,7 +41,7 @@
          * @brief Interrupt routine to control PWM of motor drivers
          */
         ISR(TIMER0_OVF_vect){  
-            drive_ctrl_PWM();
+            drive_ctrl_PWM_processing();
         }  
     #endif
 

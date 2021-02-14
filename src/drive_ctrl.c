@@ -27,6 +27,7 @@
 #define MAX_INT_CNT 100
 #define MAX_PWM MAX_INT_CNT
 #define TCNT0_INITIAL 254
+#define DRVPWM_CMD_ARGUMENT_OFFSET 7
 
 static uint8_t PWM = 80;
 
@@ -80,9 +81,51 @@ static void wheel_4_ccw(void){
     PORTB |= SB(M4_IN2);
 }
 
-/**
- * API functions
- */
+/* Set of functions to combine wheel movements into robot movement*/
+static void stop(void){
+    PORTC &= CB(M1_IN1);
+    PORTC &= CB(M1_IN2);
+    PORTC &= CB(M2_IN1);
+    PORTC &= CB(M2_IN2);
+    PORTD &= CB(M3_IN1);
+    PORTD &= CB(M3_IN2);
+    PORTD &= CB(M4_IN1);
+    PORTB &= CB(M4_IN2);
+}
+
+static void go_forward(void){
+    wheel_1_cw();
+    wheel_2_cw();
+    wheel_3_cw();
+    wheel_4_cw();
+}
+
+static void go_backward(void){
+    wheel_1_ccw();
+    wheel_2_ccw();
+    wheel_3_ccw();
+    wheel_4_ccw();
+}
+
+static void turn_right(void){
+    wheel_1_cw();
+    wheel_2_ccw();
+    wheel_3_ccw();
+    wheel_4_cw();
+}
+
+static void turn_left(void){
+    wheel_1_ccw();
+    wheel_2_cw();
+    wheel_3_cw();
+    wheel_4_ccw();
+}
+
+static void set_PWM(const uint8_t pwm){
+    PWM = (pwm > MAX_PWM)?MAX_PWM:pwm;
+}
+
+/* Public control of PWM */
 void drive_ctrl_disable_PWM(void){
     DISABLE_M1_PWM();
     DISABLE_M2_PWM();
@@ -97,45 +140,25 @@ void drive_ctrl_enable_PWM(void){
     ENABLE_M4_PWM();
 }
 
-void drive_ctrl_stop(void){
-    PORTC &= CB(M1_IN1);
-    PORTC &= CB(M1_IN2);
-    PORTC &= CB(M2_IN1);
-    PORTC &= CB(M2_IN2);
-    PORTD &= CB(M3_IN1);
-    PORTD &= CB(M3_IN2);
-    PORTD &= CB(M4_IN1);
-    PORTB &= CB(M4_IN2);
+/**
+ * @brief Used in ISR to provide smooth PWM switching (without visible motor turn-on/off)
+ */
+void drive_ctrl_PWM_processing(void){
+    static uint8_t cnt = 0;
+    if(cnt < PWM){
+        drive_ctrl_enable_PWM();
+    } else {
+        drive_ctrl_disable_PWM();
+    }
+    if(cnt >= MAX_INT_CNT){
+        cnt = 0;
+    } else {
+        ++cnt;
+    }
+    TCNT0 = TCNT0_INITIAL;
 }
 
-void drive_ctrl_go_forward(void){
-    wheel_1_cw();
-    wheel_2_cw();
-    wheel_3_cw();
-    wheel_4_cw();
-}
-
-void drive_ctrl_go_backward(void){
-    wheel_1_ccw();
-    wheel_2_ccw();
-    wheel_3_ccw();
-    wheel_4_ccw();
-}
-
-void drive_ctrl_turn_right(void){
-    wheel_1_cw();
-    wheel_2_ccw();
-    wheel_3_ccw();
-    wheel_4_cw();
-}
-
-void drive_ctrl_turn_left(void){
-    wheel_1_ccw();
-    wheel_2_cw();
-    wheel_3_cw();
-    wheel_4_ccw();
-}
-
+/* High-level functions*/
 void drive_ctrl_init(void){
     log_info_P(DRV_CTRL_INIT);
     timer0_init(); 
@@ -160,25 +183,6 @@ void drive_ctrl_init(void){
     drive_ctrl_enable_PWM();
 }
 
-void drive_ctrl_PWM(void){
-    static uint8_t cnt = 0;
-    if(cnt < PWM){
-        drive_ctrl_enable_PWM();
-    } else {
-        drive_ctrl_disable_PWM();
-    }
-    if(cnt >= MAX_INT_CNT){
-        cnt = 0;
-    } else {
-        ++cnt;
-    }
-    TCNT0 = TCNT0_INITIAL;
-}
-
-void drive_ctrl_set_PWM(const uint8_t pwm){
-    PWM = (pwm > MAX_PWM)?MAX_PWM:pwm;
-}
-
 void drive_ctrl_run(void){
     static char rx_buff[10];
     static uint8_t data_length = 0;
@@ -187,49 +191,49 @@ void drive_ctrl_run(void){
         switch (rx_buff[0])
         {
         case MOTORS_GO_FORWARD:
-            drive_ctrl_go_forward();
+            go_forward();
             break;
         case MOTORS_GO_BACKWARD:
-            drive_ctrl_go_backward();
+            go_backward();
             break;
         case MOTORS_TURN_RIGHT:
-            drive_ctrl_turn_right();
+            turn_right();
             break;
         case MOTORS_TURN_LEFT:
-            drive_ctrl_turn_left();
+            turn_left();
             break;
         case MOTORS_STOP:
-            drive_ctrl_stop();
+            stop();
             break;
         case MOTORS_PWM_10:
-            drive_ctrl_set_PWM(10);
+            set_PWM(10);
             break;
         case MOTORS_PWM_20:
-            drive_ctrl_set_PWM(20);
+            set_PWM(20);
             break;
         case MOTORS_PWM_30:
-            drive_ctrl_set_PWM(30);
+            set_PWM(30);
             break;
         case MOTORS_PWM_40:
-            drive_ctrl_set_PWM(40);
+            set_PWM(40);
             break;
         case MOTORS_PWM_50:
-            drive_ctrl_set_PWM(50);
+            set_PWM(50);
             break;
         case MOTORS_PWM_60:
-            drive_ctrl_set_PWM(60);
+            set_PWM(60);
             break;
         case MOTORS_PWM_70:
-            drive_ctrl_set_PWM(70);
+            set_PWM(70);
             break;
         case MOTORS_PWM_80:
-            drive_ctrl_set_PWM(80);
+            set_PWM(80);
             break;
         case MOTORS_PWM_90:
-            drive_ctrl_set_PWM(90);
+            set_PWM(90);
             break;
         case MOTORS_PWM_100:
-            drive_ctrl_set_PWM(100);
+            set_PWM(100);
             break;
         default:
             break;
@@ -237,8 +241,41 @@ void drive_ctrl_run(void){
     }
 }
 
+/* Debug callbacks */
+/**
+ * @brief Debug function for serial module to allow PWM setting via UART
+ * @param data cmd with parameter: drvpwm xxx, where xxx is PWM value in range of 0-100
+ * @param data_len size of @data
+ */
 void drive_ctrl_set_pwm_cbk(const void *data, size_t data_len){
-    log_data_1("data_len = %d", data_len);
-    log_data_1("data = %s", (const char *)data);
+    uint8_t arg_value = atoi(((const char*)data)+DRVPWM_CMD_ARGUMENT_OFFSET);
+    set_PWM(arg_value);
+}
 
+/**
+ * @brief Debug function for motor control
+ * @param data data in format: drvctrl f/b/l/r/s, example: drvctrl f
+ * @param data_len size of @data
+ */
+void drive_ctrl_set_movement(const void *data, size_t data_len){
+    char subcmd = ((const char*)data)[8];
+    switch (subcmd){
+    case 'f':
+        go_forward();
+        break;
+    case 'b':
+        go_backward();
+        break;
+    case 'l':
+        turn_left();
+        break;
+    case 'r':
+        turn_right();
+        break;
+    case 's':
+        stop();
+        break;
+    default:
+        break;
+    }
 }

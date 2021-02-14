@@ -56,8 +56,9 @@ static bool to_rx_buffer(const char c){
 
 /**
  * @brief Searches for cmd in cmd_list 
- * Returns true if cmd has been found and returns adress of cmd_record via argument
+ * Parses first work from @cmd string and tries to match it (further 'words' are considered arguments for the @cmd)
  * @param cmd string to be matched in cmd_list
+ * @return record if cmd has been found, NULL otherwise
  */
 static const Cmd_Record_T* find_cmd(const char *cmd){
     const char *first_space = strchr(cmd, SPACE_CHAR);
@@ -66,19 +67,16 @@ static const Cmd_Record_T* find_cmd(const char *cmd){
     if(first_space != NULL){
         memcpy((void *)cmd_name, (const void*)cmd, (size_t)(first_space-cmd));
         cmd_name[first_space-cmd] = NULL_CHAR;
-        // log_info("Argged cmd");
     } else {
         strcpy(cmd_name, cmd);
-        // log_info("Usual cmd");
     }
 
     for(uint8_t i = 0; i < arr_length(cmd_list); i++){
-        // log_data_1("i=%d", i);
         if(0 == strcmp(cmd_list[i].string, cmd_name)){
-            // log_data_1("winner i=%d", i);
             return &(cmd_list[i]);
         }
     }
+    
     log_err_P(CMD_NOT_FOUND);
     return NULL;
 }
@@ -92,8 +90,6 @@ static void to_udr(const unsigned char c){
     ;
     UDR = c;
 }
-
-
 
 /* Global functions */
 
@@ -112,14 +108,10 @@ void serial_on_receive(const char c){
     if(c == LF || c == CR) {
         const Cmd_Record_T *cmd_record = find_cmd(rx_buffer);
         if(cmd_record != NULL){
-            // log_info("cmd rec not null");
             if(cmd_record->direct_callback != NULL){
-                // log_info("dir cbk not null");
                 cmd_record->direct_callback();
-            } else {
-                // log_info("cust cbk not null");
+            } else if(cmd_record->custom_callback != NULL){
                 cmd_record->custom_callback(rx_buffer, (size_t)(rx_buffer_head - rx_buffer));
-                // log_data_1("ile to jest %d",(uint8_t)(rx_buffer_head - rx_buffer));
             }
         }
         serial_clear_rx_buffer();
@@ -129,7 +121,7 @@ void serial_on_receive(const char c){
 }
 
 /**
- * @brief Transfer contents of rx_buffer to UDR
+ * @brief Transfer contents of rx_buffer to UDR (this is debug command)
  */
 void serial_read_rx_buffer(void){
     if(rx_buffer_head != rx_buffer){
