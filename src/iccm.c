@@ -138,7 +138,6 @@ static char read_byte_on_pin(){
  * ICCM_RX, ICCM_TX, ICCM_DELAY_US
  */
 void ICCM_init(void){
-    log_info_P(ICCM_INIT);
     /* configure INT0 to activate on rising edge  */
     MCUCR |= SB(ISC01) | SB(ISC00);
     /* enable INT0 */

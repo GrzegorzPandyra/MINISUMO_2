@@ -22,15 +22,7 @@
         AI_STATUS_ATTACK,
         AI_STATUS_R2R,
         AI_FORCED_STOP,
-        AI_INIT_IN_5,
-        AI_INIT_IN_4,
-        AI_INIT_IN_3,
-        AI_INIT_IN_2,
-        AI_INIT_IN_1,
-        DRV_CTRL_INIT,
-        ICCM_INIT,
-        SERIAL_INIT,
-        ADC_INIT
+        AI_INIT_IN
     } Progmem_Table_Index_T;
 
     /* Global variables */

@@ -199,8 +199,6 @@ void serial_init(uint32_t f_cpu, uint32_t baudrate){
     
     /* Clear INT0 flag */
     GIFR |= 1<<INTF0;
-
-    log_info_P(SERIAL_INIT);
 }
 
 /**
@@ -275,4 +273,11 @@ void serial_clear_tx_buffer(void){
  */
 bool serial_is_tx_buffer_full(void){
     return (tx_buffer_head >= tx_buffer+TX_BUFFER_SIZE);
+}
+
+/**
+ * @brief Print only the string provided in @str (no metadata)
+ */
+void serial_log_raw_string(const char *str){
+    print_msg_data(str);
 }

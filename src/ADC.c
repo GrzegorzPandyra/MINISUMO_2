@@ -26,5 +26,4 @@ void ADC_init(void){
     /* Enable ADC*/
     ADCSRA |= 1<<ADEN;
     timer0_init();
-    log_info_P(ADC_INIT);
 } 

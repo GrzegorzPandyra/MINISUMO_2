@@ -6,7 +6,6 @@
 #include <stdint.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <util/delay.h>
 #include "serial_tx.h"
 #include "ISR.h"
 #include "ICCM.h"

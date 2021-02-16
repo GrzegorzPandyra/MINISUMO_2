@@ -8,7 +8,6 @@
 #define MOTORS_TURN_LEFT   "L"
 #define MOTORS_STOP        "S"
 #define MOTORS_PWM_10      "1"
-#define MOTORS_PWM_20      "2"
 #define MOTORS_PWM_30      "3"
 #define MOTORS_PWM_40      "4"
 #define MOTORS_PWM_50      "5"
@@ -25,7 +24,6 @@
 #define MOTORS_TURN_RIGHT  'R'
 #define MOTORS_TURN_LEFT   'L'
 #define MOTORS_STOP        'S'
-#define MOTORS_PWM_10      '1'
 #define MOTORS_PWM_20      '2'
 #define MOTORS_PWM_30      '3'
 #define MOTORS_PWM_40      '4'

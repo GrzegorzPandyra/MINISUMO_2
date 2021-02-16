@@ -60,7 +60,8 @@
     #define MCU_SPECIFIC_SERIAL_CMD_LIST \
     {"drvinit", drive_ctrl_init, NULL}, \
     {"drvpwm", NULL, drive_ctrl_set_pwm_cbk}, \
-    {"drvctrl", NULL, drive_ctrl_set_movement} \
+    {"drvctrl", NULL, drive_ctrl_set_movement_cbk}, \
+    {"drvtr", NULL, drive_ctrl_turn_right_cbk} \
 
 #endif
 

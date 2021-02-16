@@ -14,6 +14,7 @@
 #define RUN_DELAY_MS 5
 #define INIT_DELAY_MS 1000
 #define FORCE_STOP_DELAY_MS 1000
+#define DEFAULT_PWM_VALUE 50
 
 static void stop(void);
 static void LS1_triggered(void);
@@ -49,6 +50,11 @@ typedef struct AI_Vector_Tag {
     Vector_Cbk cbk;
 } AI_Vector_T;
 
+typedef struct Rotation_Adjustment_Record_Tag{
+    const uint8_t PWM;
+    const uint16_t rotation_time;
+}Rotation_Adjustment_Record_T;
+
 static const AI_Vector_T AI_VECTORS[] = {
     {LS1_TRIGGERED, LS1_triggered},
     {LS2_TRIGGERED, LS2_triggered},
@@ -64,80 +70,122 @@ static const AI_Vector_T AI_VECTORS[] = {
     {UNKNOWN, 0}
 };
 
-static AI_Status_T AI_status = AI_IDLE;
+static const Rotation_Adjustment_Record_T ROTATION_ADJUSTMENT_TABLE[] = {
+    {0,0},
+    {0,0},
+    {20, 1286},
+    {30, 500},
+    {40, 333},
+    {50, 237},
+    {60, 200},
+    {70, 148},
+    {80, 136},
+    {90, 111},
+    {100, 100}
+};
 
+static AI_Status_T AI_status = AI_IDLE;
+static uint8_t current_PWM = DEFAULT_PWM_VALUE;
+
+/**
+ * @brief Get the rotation delay coresponding to current PWM value
+ * @return uint16_t delay in milliseconds
+ */
+static uint16_t get_rotation_delay(void){
+    return ROTATION_ADJUSTMENT_TABLE[current_PWM/10].rotation_time;
+}
+
+/**
+ * @brief Wrapper for _delay_ms() function to allow dynamic delays
+ * @param delay Delay in milliseconds
+ */
+static void variable_delay_ms(uint16_t delay){
+    for(uint16_t i = 0; i<delay; i++){
+        _delay_ms(1);
+    }
+}
+
+/* Implementation of AI vectors */
 static void stop(void){
     ICCM_send(MOTORS_STOP);
 }
 
 static void LS1_triggered(void){
-    ICCM_send(MOTORS_GO_BACKWARD);
-    _delay_ms(1);
+    current_PWM = DEFAULT_PWM_VALUE;
     ICCM_send(MOTORS_PWM_30);
+    _delay_ms(1);
+    ICCM_send(MOTORS_GO_BACKWARD);
     _delay_ms(100);
     ICCM_send(MOTORS_TURN_RIGHT);
-    _delay_ms(100);
+    variable_delay_ms(get_rotation_delay());
     ICCM_send(MOTORS_GO_FORWARD);
 }
 
 static void LS2_triggered(void){
-    ICCM_send(MOTORS_GO_BACKWARD);
-    _delay_ms(1);
+    current_PWM = DEFAULT_PWM_VALUE;
     ICCM_send(MOTORS_PWM_30);
+    _delay_ms(1);
+    ICCM_send(MOTORS_GO_BACKWARD);
     _delay_ms(100);
     ICCM_send(MOTORS_TURN_LEFT);
-    _delay_ms(100);
+    variable_delay_ms(get_rotation_delay());
     ICCM_send(MOTORS_GO_FORWARD);
 }
 
 static void LS3_triggered(void){
-    ICCM_send(MOTORS_GO_FORWARD);
-    _delay_ms(1);
+    current_PWM = DEFAULT_PWM_VALUE;
     ICCM_send(MOTORS_PWM_30);
+    _delay_ms(1);
+    ICCM_send(MOTORS_GO_FORWARD);
     _delay_ms(100);
     ICCM_send(MOTORS_TURN_LEFT);
-    _delay_ms(100);
+    variable_delay_ms(get_rotation_delay());
     ICCM_send(MOTORS_GO_BACKWARD);
 }
 
 static void LS4_triggered(void){
+    current_PWM = DEFAULT_PWM_VALUE;
+    ICCM_send(MOTORS_PWM_30);
+    _delay_ms(1);
     ICCM_send(MOTORS_GO_FORWARD);
     _delay_ms(100);
-    ICCM_send(MOTORS_PWM_30);
-    _delay_ms(100);
     ICCM_send(MOTORS_TURN_RIGHT);
-    _delay_ms(100);
+    variable_delay_ms(get_rotation_delay());
     ICCM_send(MOTORS_GO_BACKWARD);
 }
 
 static void LS1_LS2_triggered(void){
-    ICCM_send(MOTORS_GO_BACKWARD);
-    _delay_ms(1);
+    current_PWM = DEFAULT_PWM_VALUE;
     ICCM_send(MOTORS_PWM_30);
+    _delay_ms(1);
+    ICCM_send(MOTORS_GO_BACKWARD);
     _delay_ms(100);
     ICCM_send(MOTORS_TURN_RIGHT);
-    _delay_ms(200);
+    variable_delay_ms(2*get_rotation_delay());
 }
 
 static void LS2_LS3_triggered(void){
+    current_PWM = DEFAULT_PWM_VALUE;
     ICCM_send(MOTORS_PWM_30);
     _delay_ms(1);
     ICCM_send(MOTORS_TURN_LEFT);
-    _delay_ms(100);
+    variable_delay_ms(get_rotation_delay());
     ICCM_send(MOTORS_GO_FORWARD);
 }
 
 static void LS3_LS4_triggered(void){
+    current_PWM = DEFAULT_PWM_VALUE;
     ICCM_send(MOTORS_PWM_30);
     _delay_ms(1);
     ICCM_send(MOTORS_GO_FORWARD);
 }
 
 static void LS4_LS1_triggered(void){
+    current_PWM = DEFAULT_PWM_VALUE;
     ICCM_send(MOTORS_PWM_30);
     _delay_ms(1);
     ICCM_send(MOTORS_TURN_RIGHT);
-    _delay_ms(100);
+    variable_delay_ms(get_rotation_delay());
     ICCM_send(MOTORS_GO_FORWARD);
 }
 
@@ -183,15 +231,16 @@ void AI_run(uint8_t ls_readings, uint16_t ds_reading){
 void AI_init(void){
     AI_status = AI_ARMED;
     log_info_P(AI_STATUS_ARMED);
-    log_info_P(AI_INIT_IN_5);
+    log_info_P(AI_INIT_IN);
+    serial_log_raw_string("5..");
     _delay_ms(INIT_DELAY_MS);
-    log_info_P(AI_INIT_IN_4);
+    serial_log_raw_string("4..");
     _delay_ms(INIT_DELAY_MS);
-    log_info_P(AI_INIT_IN_3);
+    serial_log_raw_string("3..");
     _delay_ms(INIT_DELAY_MS);
-    log_info_P(AI_INIT_IN_2);
+    serial_log_raw_string("2..");
     _delay_ms(INIT_DELAY_MS);
-    log_info_P(AI_INIT_IN_1);
+    serial_log_raw_string("1..");
     _delay_ms(INIT_DELAY_MS);
     AI_status = AI_SEARCH;
     log_info_P(AI_STATUS_SEARCH);

@@ -69,4 +69,5 @@ void serial_disable_buffering(void);
 void serial_enable_buffering(void);
 void serial_read_tx_buffer(void);
 void serial_clear_tx_buffer(void);
+void serial_log_raw_string(const char *str);
 #endif /* SERIAL_TX_GUARD */
