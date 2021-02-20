@@ -76,8 +76,9 @@ static const Cmd_Record_T* find_cmd(const char *cmd){
             return &(cmd_list[i]);
         }
     }
-    
-    log_err_P(CMD_NOT_FOUND);
+    #ifdef SERIAL_RX_DEBUG
+        log_err_P(PROGMEM_CMD_NOT_FOUND);
+    #endif
     return NULL;
 }
 

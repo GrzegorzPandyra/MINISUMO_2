@@ -168,7 +168,9 @@ static void show_tx_buffer_overflow_error(void){
         serial_disable_buffering();
     
     to_udr(NEWLINE_CHAR);
-    log_err_P(TX_BUFFER_OVERFLOW);
+    #ifdef SERIAL_TX_DEBUG
+        log_err_P(PROGMEM_TX_BUFFER_OVERFLOW);
+    #endif
     
     if(is_buffering_enabled)
         serial_enable_buffering();
@@ -229,7 +231,9 @@ void serial_log(const Log_Metadata_T metadata, const char *str){
  * @brief Enable data buffering
  */
 void serial_enable_buffering(void){
-    log_info_P(LOG_BUFFERING_ENABLED);
+    #ifdef SERIAL_TX_DEBUG
+        log_info_P(PROGMEM_LOG_BUFFERING_ENABLED);
+    #endif
     data_destination = T_TX_BUFFER;
 }
 
@@ -239,7 +243,9 @@ void serial_enable_buffering(void){
     
 void serial_disable_buffering(void){
     data_destination = T_UDR;
-    log_info_P(LOG_BUFFERING_DISABLED);
+    #ifdef SERIAL_TX_DEBUG
+        log_info_P(PROGMEM_LOG_BUFFERING_DISABLED);
+    #endif
 }
 
 /**

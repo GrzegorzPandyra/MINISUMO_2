@@ -212,14 +212,47 @@ static AI_Vector_T get_vector_by_ID(AI_Vector_ID_T id){
 
 static AI_Vector_T calculate_vector(uint8_t ls_reading, uint16_t ds_reading){
     AI_Vector_T result = get_vector_by_ID((AI_Vector_ID_T)ls_reading);
+    AI_Status_T current_AI_status = AI_status;
     if(result.id == UNKNOWN){
         if(ds_reading > DS_TRIGGER_LEVEL){
             result = get_vector_by_ID(DS_TRIGGERED);
+            AI_status = AI_ATTACK;
         } else {
             result = get_vector_by_ID(NO_SENSOR_INPUT);
+            AI_status = AI_SEARCH;
         }
-    }    
+    } else {
+        AI_status = AI_R2R;
+    }
+    if(current_AI_status != AI_status){
+        print_AI_status();
+    }
     return result;
+}
+
+void print_AI_status(void){
+    #ifdef AI_DEBUG
+        switch (AI_status){
+            case AI_IDLE:
+                log_info_P(PROGMEM_AI_STATUS_IDLE);
+                break;
+            case AI_ARMED:
+                log_info_P(PROGMEM_AI_STATUS_ARMED);
+                break;
+            case AI_SEARCH:
+                log_info_P(PROGMEM_AI_STATUS_SEARCH);
+                break;
+            case AI_ATTACK:
+                log_info_P(PROGMEM_AI_STATUS_ATTACK);
+                break;
+            case AI_R2R:
+                log_info_P(PROGMEM_AI_STATUS_R2R);
+                break;
+            default:
+                log_err("AI status unknown");
+                break;
+        }
+    #endif
 }
 
 void AI_run(uint8_t ls_readings, uint16_t ds_reading){
@@ -230,32 +263,39 @@ void AI_run(uint8_t ls_readings, uint16_t ds_reading){
 
 void AI_init(void){
     AI_status = AI_ARMED;
-    log_info_P(AI_STATUS_ARMED);
-    log_info_P(AI_INIT_IN);
-    serial_log_raw_string("5..");
-    _delay_ms(INIT_DELAY_MS);
-    serial_log_raw_string("4..");
-    _delay_ms(INIT_DELAY_MS);
-    serial_log_raw_string("3..");
-    _delay_ms(INIT_DELAY_MS);
-    serial_log_raw_string("2..");
-    _delay_ms(INIT_DELAY_MS);
-    serial_log_raw_string("1..");
-    _delay_ms(INIT_DELAY_MS);
+    #ifdef AI_DEBUG
+        log_info_P(PROGMEM_AI_STATUS_ARMED);
+        log_info_P(PROGMEM_AI_INIT_IN);
+        serial_log_raw_string("5..");
+        _delay_ms(INIT_DELAY_MS);
+        serial_log_raw_string("4..");
+        _delay_ms(INIT_DELAY_MS);
+        serial_log_raw_string("3..");
+        _delay_ms(INIT_DELAY_MS);
+        serial_log_raw_string("2..");
+        _delay_ms(INIT_DELAY_MS);
+        serial_log_raw_string("1..\n");
+        _delay_ms(INIT_DELAY_MS);
+        log_info_P(PROGMEM_AI_STATUS_SEARCH);
+    #else
+        _delay_ms(5*INIT_DELAY_MS);
+    #endif
     AI_status = AI_SEARCH;
-    log_info_P(AI_STATUS_SEARCH);
     ICCM_send(MOTORS_GO_FORWARD);
     _delay_ms(1);
     ICCM_send(MOTORS_PWM_30);
 }
 
 AI_Status_T AI_get_status(void){
+    print_AI_status();
     return AI_status;
 }
 
 void AI_force_stop(void){
     get_vector_by_ID(STOP).cbk();
-    AI_status = IDLE;
-    log_info_P(AI_FORCED_STOP);
+    AI_status = AI_IDLE;
+    #ifdef AI_DEBUG
+        log_info_P(PROGMEM_AI_FORCED_STOP);
+    #endif
     _delay_ms(FORCE_STOP_DELAY_MS);
 }

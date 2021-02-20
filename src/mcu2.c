@@ -21,7 +21,7 @@ int main(){
     ICCM_init();
     drive_ctrl_init();
     sei();
-    log_info_P(MCU2_ONLINE);
+    log_info_P(PROGMEM_MCU2_ONLINE);
 
     while(1) /* Loop the messsage continously */
     { 

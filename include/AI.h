@@ -18,5 +18,6 @@ void AI_init(void);
 AI_Status_T AI_get_status(void);
 void AI_force_stop(void);
 void AI_turn_right_cbk(const void *data, size_t data_len);
+void print_AI_status(void);
 
 #endif /* AI_GUARD */

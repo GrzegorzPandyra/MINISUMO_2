@@ -27,8 +27,8 @@ int main(){
     ICCM_init();
     ADC_init();
     sei();
-    log_info_P(MCU1_ONLINE);
-    log_info_P(AI_STATUS_IDLE);
+    log_info_P(PROGMEM_MCU1_ONLINE);
+    print_AI_status();
     while(1)
     { 
         if((PINC & (1<<MASTER_INIT)) == 0){
@@ -36,23 +36,25 @@ int main(){
                 AI_init();
             } else {
                 AI_force_stop();
+                print_AI_status();
             }
         }
 
         switch (AI_get_status()){
-        case AI_SEARCH:
-        case AI_ATTACK:
-        case AI_R2R:
-            DS_reading = distance_sensor_get_status();
-            LS_readings = line_sensor_get_status();
-            AI_run(LS_readings, DS_reading);
-            break;
-        case AI_IDLE:
-        case AI_ARMED:
-            /* Do nothing */
-            break;
-        default:
-            break;
+            case AI_SEARCH:
+            case AI_ATTACK:
+            case AI_R2R:
+                DS_reading = distance_sensor_get_status();
+                LS_readings = line_sensor_get_status();
+                log_data_1("LS status=%d", LS_readings);
+                AI_run(LS_readings, DS_reading);
+                break;
+            case AI_IDLE:
+            case AI_ARMED:
+                /* Do nothing */
+                break;
+            default:
+                break;
         }
     }
     return 0;

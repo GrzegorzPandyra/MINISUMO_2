@@ -6,44 +6,44 @@
 
 #define DATA_CONVERSION_BUFFER_SIZE 30
 
-/* Literals kept in codeflash for logging               0|                             |29*/
-static const char TX_BUFFER_OVERFLOW_P[]       PROGMEM = "TX buffer overflow!";
-static const char LOG_BUFFERING_ENABLED_P[]    PROGMEM = "Log buffering enabled";
-static const char LOG_BUFFERING_DISABLED_P[]   PROGMEM = "Log buffering disabled";
-static const char MCU1_ONLINE_P[]              PROGMEM = "MCU1 online";
-static const char MCU2_ONLINE_P[]              PROGMEM = "MCU2 online";
-static const char CMD_NOT_FOUND_P[]            PROGMEM = "Cmd not found";
-static const char ICCM_SENDING_DATA_P[]        PROGMEM = "ICCM Sending data:";
-static const char ICCM_RX_BUFFER_DATA_P[]      PROGMEM = "ICCM RX buffer data:";
-static const char ICCM_RX_BUFFER_OVERFLOW_P[]  PROGMEM = "ICCM RX BUFFER OVERFLOW";
-static const char ICCM_RX_BUFFER_CLEARED_P[]   PROGMEM = "ICCM RX BUFFER cleared";
-static const char AI_STATUS_IDLE_P[]           PROGMEM = "AI status: IDLE";
-static const char AI_STATUS_ARMED_P[]          PROGMEM = "AI status: ARMED";
-static const char AI_STATUS_SEARCH_P[]         PROGMEM = "AI status: SEARCH";
-static const char AI_STATUS_ATTACK_P[]         PROGMEM = "AI status: ATTACK";
-static const char AI_STATUS_R2R_P[]            PROGMEM = "AI status: R2R";
-static const char AI_FORCED_STOP_P[]           PROGMEM = "AI forced stop";
-static const char AI_INIT_IN_P[]               PROGMEM = "AI init in ";
+/* Literals kept in codeflash for logging                       0|                             |29*/
+static const char PROGMEM_TX_BUFFER_OVERFLOW_P[]       PROGMEM = "TX buffer overflow!";
+static const char PROGMEM_LOG_BUFFERING_ENABLED_P[]    PROGMEM = "Log buffering enabled";
+static const char PROGMEM_LOG_BUFFERING_DISABLED_P[]   PROGMEM = "Log buffering disabled";
+static const char PROGMEM_MCU1_ONLINE_P[]              PROGMEM = "MCU1 online";
+static const char PROGMEM_MCU2_ONLINE_P[]              PROGMEM = "MCU2 online";
+static const char PROGMEM_CMD_NOT_FOUND_P[]            PROGMEM = "Cmd not found";
+static const char PROGMEM_ICCM_SENDING_DATA_P[]        PROGMEM = "ICCM Sending data:";
+static const char PROGMEM_ICCM_RX_BUFFER_DATA_P[]      PROGMEM = "ICCM RX buffer data:";
+static const char PROGMEM_ICCM_RX_BUFFER_OVERFLOW_P[]  PROGMEM = "ICCM RX BUFFER OVERFLOW";
+static const char PROGMEM_ICCM_RX_BUFFER_CLEARED_P[]   PROGMEM = "ICCM RX BUFFER cleared";
+static const char PROGMEM_AI_STATUS_IDLE_P[]           PROGMEM = "AI status: IDLE";
+static const char PROGMEM_AI_STATUS_ARMED_P[]          PROGMEM = "AI status: ARMED";
+static const char PROGMEM_AI_STATUS_SEARCH_P[]         PROGMEM = "AI status: SEARCH";
+static const char PROGMEM_AI_STATUS_ATTACK_P[]         PROGMEM = "AI status: ATTACK";
+static const char PROGMEM_AI_STATUS_R2R_P[]            PROGMEM = "AI status: R2R";
+static const char PROGMEM_AI_FORCED_STOP_P[]           PROGMEM = "AI forced stop";
+static const char PROGMEM_AI_INIT_IN_P[]               PROGMEM = "AI init in:";
 
 
 
 char data_conversion_buffer[DATA_CONVERSION_BUFFER_SIZE] = {};
 const char* progmem_string_table[] PROGMEM = {
-    TX_BUFFER_OVERFLOW_P, 
-    LOG_BUFFERING_ENABLED_P,
-    LOG_BUFFERING_DISABLED_P,
-    MCU1_ONLINE_P,
-    MCU2_ONLINE_P,
-    CMD_NOT_FOUND_P,
-    ICCM_SENDING_DATA_P,
-    ICCM_RX_BUFFER_DATA_P,
-    ICCM_RX_BUFFER_OVERFLOW_P,
-    ICCM_RX_BUFFER_CLEARED_P,
-    AI_STATUS_IDLE_P,
-    AI_STATUS_ARMED_P,
-    AI_STATUS_SEARCH_P,
-    AI_STATUS_ATTACK_P,
-    AI_STATUS_R2R_P,
-    AI_FORCED_STOP_P,
-    AI_INIT_IN_P
+    PROGMEM_TX_BUFFER_OVERFLOW_P, 
+    PROGMEM_LOG_BUFFERING_ENABLED_P,
+    PROGMEM_LOG_BUFFERING_DISABLED_P,
+    PROGMEM_MCU1_ONLINE_P,
+    PROGMEM_MCU2_ONLINE_P,
+    PROGMEM_CMD_NOT_FOUND_P,
+    PROGMEM_ICCM_SENDING_DATA_P,
+    PROGMEM_ICCM_RX_BUFFER_DATA_P,
+    PROGMEM_ICCM_RX_BUFFER_OVERFLOW_P,
+    PROGMEM_ICCM_RX_BUFFER_CLEARED_P,
+    PROGMEM_AI_STATUS_IDLE_P,
+    PROGMEM_AI_STATUS_ARMED_P,
+    PROGMEM_AI_STATUS_SEARCH_P,
+    PROGMEM_AI_STATUS_ATTACK_P,
+    PROGMEM_AI_STATUS_R2R_P,
+    PROGMEM_AI_FORCED_STOP_P,
+    PROGMEM_AI_INIT_IN_P
 };

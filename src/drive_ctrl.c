@@ -287,8 +287,6 @@ void drive_ctrl_turn_right_cbk(const void *data, size_t data_len){
     uint16_t arg_value = (data_ptr[DRVTR_ARGUMENT_OFFSET]-ASCII_NUM_OFFSET)*100;
     arg_value += (data_ptr[DRVTR_ARGUMENT_OFFSET+1]-ASCII_NUM_OFFSET)*10;
     arg_value += (data_ptr[DRVTR_ARGUMENT_OFFSET+2]-ASCII_NUM_OFFSET);
-    log_data_1("str = %s", (const char*)data);
-    log_data_1("argvalue = %d", arg_value);
     turn_right();
     switch (arg_value){
     case 100:

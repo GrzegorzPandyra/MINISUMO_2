@@ -6,23 +6,23 @@
 
     /** Indexes related to strings stored in progmem_string_table */                                                                                            
     typedef enum Progmem_Table_Index_Tag{
-        TX_BUFFER_OVERFLOW = 0,
-        LOG_BUFFERING_ENABLED,
-        LOG_BUFFERING_DISABLED,
-        MCU1_ONLINE,
-        MCU2_ONLINE,
-        CMD_NOT_FOUND,
-        ICCM_SENDING_DATA,
-        ICCM_RX_BUFFER_DATA,
-        ICCM_RX_BUFFER_OVERFLOW,
-        ICCM_RX_BUFFER_CLEARED,
-        AI_STATUS_IDLE,
-        AI_STATUS_ARMED,
-        AI_STATUS_SEARCH,
-        AI_STATUS_ATTACK,
-        AI_STATUS_R2R,
-        AI_FORCED_STOP,
-        AI_INIT_IN
+        PROGMEM_TX_BUFFER_OVERFLOW = 0,
+        PROGMEM_LOG_BUFFERING_ENABLED,
+        PROGMEM_LOG_BUFFERING_DISABLED,
+        PROGMEM_MCU1_ONLINE,
+        PROGMEM_MCU2_ONLINE,
+        PROGMEM_CMD_NOT_FOUND,
+        PROGMEM_ICCM_SENDING_DATA,
+        PROGMEM_ICCM_RX_BUFFER_DATA,
+        PROGMEM_ICCM_RX_BUFFER_OVERFLOW,
+        PROGMEM_ICCM_RX_BUFFER_CLEARED,
+        PROGMEM_AI_STATUS_IDLE,
+        PROGMEM_AI_STATUS_ARMED,
+        PROGMEM_AI_STATUS_SEARCH,
+        PROGMEM_AI_STATUS_ATTACK,
+        PROGMEM_AI_STATUS_R2R,
+        PROGMEM_AI_FORCED_STOP,
+        PROGMEM_AI_INIT_IN
     } Progmem_Table_Index_T;
 
     /* Global variables */

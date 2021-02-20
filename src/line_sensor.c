@@ -64,14 +64,5 @@ uint8_t line_sensor_get_status(){
     uint8_t result = 0;
     for(uint8_t i=0; i<NUM_ELEMS(line_sensor_array); i++)
         force_bit(&result, line_sensor_array[i].status, i);
-
-    // if(result & 0x01)
-    //     log_info("LS1");
-    // if(result & 0x02)
-    //     log_info("LS2");
-    // if(result & 0x04)
-    //     log_info("LS3");
-    // if(result & 0x08)
-    //     log_info("LS4");
     return result;
 }
