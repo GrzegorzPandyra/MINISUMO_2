@@ -10,11 +10,30 @@
 #include "AI.h"
 #include <util/delay.h>
 
+/* Disable debug logs if AI_DEBUG is not defined during build */
+#ifndef AI_DEBUG
+    #undef log_info_P
+    #define log_info_P(str)
+    #undef log_info
+    #define log_info(str)
+    #undef log_warn
+    #define log_warn(str)
+    #undef log_warn_P
+    #define log_warn_P(str)
+    #undef log_err
+    #define log_err(str)
+    #undef log_err_P
+    #define log_err_P(str)
+    #undef log_raw_string
+    #define log_raw_string(str)
+#endif
+
 #define DS_TRIGGER_LEVEL 100
 #define RUN_DELAY_MS 5
 #define INIT_DELAY_MS 1000
 #define FORCE_STOP_DELAY_MS 1000
 #define DEFAULT_PWM_VALUE 50
+
 
 static void stop(void);
 static void LS1_triggered(void);
@@ -231,28 +250,26 @@ static AI_Vector_T calculate_vector(uint8_t ls_reading, uint16_t ds_reading){
 }
 
 void print_AI_status(void){
-    #ifdef AI_DEBUG
-        switch (AI_status){
-            case AI_IDLE:
-                log_info_P(PROGMEM_AI_STATUS_IDLE);
-                break;
-            case AI_ARMED:
-                log_info_P(PROGMEM_AI_STATUS_ARMED);
-                break;
-            case AI_SEARCH:
-                log_info_P(PROGMEM_AI_STATUS_SEARCH);
-                break;
-            case AI_ATTACK:
-                log_info_P(PROGMEM_AI_STATUS_ATTACK);
-                break;
-            case AI_R2R:
-                log_info_P(PROGMEM_AI_STATUS_R2R);
-                break;
-            default:
-                log_err("AI status unknown");
-                break;
-        }
-    #endif
+    switch (AI_status){
+        case AI_IDLE:
+            log_info_P(PROGMEM_AI_STATUS_IDLE);
+            break;
+        case AI_ARMED:
+            log_info_P(PROGMEM_AI_STATUS_ARMED);
+            break;
+        case AI_SEARCH:
+            log_info_P(PROGMEM_AI_STATUS_SEARCH);
+            break;
+        case AI_ATTACK:
+            log_info_P(PROGMEM_AI_STATUS_ATTACK);
+            break;
+        case AI_R2R:
+            log_info_P(PROGMEM_AI_STATUS_R2R);
+            break;
+        default:
+            log_err("AI status unknown");
+            break;
+    }
 }
 
 void AI_run(uint8_t ls_readings, uint16_t ds_reading){
@@ -263,23 +280,19 @@ void AI_run(uint8_t ls_readings, uint16_t ds_reading){
 
 void AI_init(void){
     AI_status = AI_ARMED;
-    #ifdef AI_DEBUG
-        log_info_P(PROGMEM_AI_STATUS_ARMED);
-        log_info_P(PROGMEM_AI_INIT_IN);
-        serial_log_raw_string("5..");
-        _delay_ms(INIT_DELAY_MS);
-        serial_log_raw_string("4..");
-        _delay_ms(INIT_DELAY_MS);
-        serial_log_raw_string("3..");
-        _delay_ms(INIT_DELAY_MS);
-        serial_log_raw_string("2..");
-        _delay_ms(INIT_DELAY_MS);
-        serial_log_raw_string("1..\n");
-        _delay_ms(INIT_DELAY_MS);
-        log_info_P(PROGMEM_AI_STATUS_SEARCH);
-    #else
-        _delay_ms(5*INIT_DELAY_MS);
-    #endif
+    log_info_P(PROGMEM_AI_STATUS_ARMED);
+    log_info_P(PROGMEM_AI_INIT_IN);
+    log_raw_string("5..");
+    _delay_ms(INIT_DELAY_MS);
+    log_raw_string("4..");
+    _delay_ms(INIT_DELAY_MS);
+    log_raw_string("3..");
+    _delay_ms(INIT_DELAY_MS);
+    log_raw_string("2..");
+    _delay_ms(INIT_DELAY_MS);
+    log_raw_string("1..\n");
+    _delay_ms(INIT_DELAY_MS);
+    log_info_P(PROGMEM_AI_STATUS_SEARCH);
     AI_status = AI_SEARCH;
     ICCM_send(MOTORS_GO_FORWARD);
     _delay_ms(1);
@@ -294,8 +307,6 @@ AI_Status_T AI_get_status(void){
 void AI_force_stop(void){
     get_vector_by_ID(STOP).cbk();
     AI_status = AI_IDLE;
-    #ifdef AI_DEBUG
-        log_info_P(PROGMEM_AI_FORCED_STOP);
-    #endif
+    log_info_P(PROGMEM_AI_FORCED_STOP);
     _delay_ms(FORCE_STOP_DELAY_MS);
 }

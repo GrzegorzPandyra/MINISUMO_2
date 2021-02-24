@@ -8,6 +8,24 @@
 #include <stdio.h>
 #include <string.h>
 
+/* Disable debug logs if AI_DEBUG is not defined during build */
+#ifndef SERIA_TX_DEBUG
+    #undef log_info_P
+    #define log_info_P(str)
+    #undef log_info
+    #define log_info(str)
+    #undef log_warn
+    #define log_warn(str)
+    #undef log_warn_P
+    #define log_warn_P(str)
+    #undef log_err
+    #define log_err(str)
+    #undef log_err_P
+    #define log_err_P(str)
+    #undef log_raw_string
+    #define log_raw_string(str)
+#endif
+
 /* Local macro definitions */
 #define MAX_UART_DATA_LENGTH 100
 #define TX_BUFFER_SIZE       300
@@ -168,9 +186,7 @@ static void show_tx_buffer_overflow_error(void){
         serial_disable_buffering();
     
     to_udr(NEWLINE_CHAR);
-    #ifdef SERIAL_TX_DEBUG
-        log_err_P(PROGMEM_TX_BUFFER_OVERFLOW);
-    #endif
+    log_err_P(PROGMEM_TX_BUFFER_OVERFLOW);
     
     if(is_buffering_enabled)
         serial_enable_buffering();
@@ -231,9 +247,7 @@ void serial_log(const Log_Metadata_T metadata, const char *str){
  * @brief Enable data buffering
  */
 void serial_enable_buffering(void){
-    #ifdef SERIAL_TX_DEBUG
-        log_info_P(PROGMEM_LOG_BUFFERING_ENABLED);
-    #endif
+    log_info_P(PROGMEM_LOG_BUFFERING_ENABLED);
     data_destination = T_TX_BUFFER;
 }
 
@@ -243,9 +257,7 @@ void serial_enable_buffering(void){
     
 void serial_disable_buffering(void){
     data_destination = T_UDR;
-    #ifdef SERIAL_TX_DEBUG
-        log_info_P(PROGMEM_LOG_BUFFERING_DISABLED);
-    #endif
+    log_info_P(PROGMEM_LOG_BUFFERING_DISABLED);
 }
 
 /**

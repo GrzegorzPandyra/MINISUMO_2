@@ -45,6 +45,8 @@ typedef struct Log_Metadata_Tag{
 #define log_err_P(id)   copy_to_ram(id); \
                         serial_log(get_metadata(ERROR), data_conversion_buffer)
 
+#define log_raw_string(str) serial_log_raw_string(str)
+
 #define log_data_1(format, arg1)                                            sprintf(data_conversion_buffer, format, arg1);\
                                                                             serial_log(get_metadata(INFO), data_conversion_buffer)
 #define log_data_2(format, arg1, arg2)                                      sprintf(data_conversion_buffer, format, arg1, arg2);\
@@ -61,7 +63,7 @@ typedef struct Log_Metadata_Tag{
                                                                             serial_log(get_metadata(INFO), data_conversion_buffer)
 #define log_data_8(format, arg1, arg2, arg3, arg4, arg5,arg6, arg7, arg8)   sprintf(data_conversion_buffer, format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);\
                                                                             serial_log(get_metadata(INFO), data_conversion_buffer)                                                                           
-                                                                                       
+                                   
 void serial_init(uint32_t f_cpu, uint32_t baudrate);
 void serial_log(const Log_Metadata_T metadata, const char *str);
 bool serial_is_tx_buffer_full(void);

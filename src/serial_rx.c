@@ -13,6 +13,23 @@
 #include "config.h"
 #include "drive_ctrl.h"
 
+/* Disable debug logs if AI_DEBUG is not defined during build */
+#ifndef SERIAL_RX_DEBUG
+    #undef log_info_P
+    #define log_info_P(str)
+    #undef log_info
+    #define log_info(str)
+    #undef log_warn
+    #define log_warn(str)
+    #undef log_warn_P
+    #define log_warn_P(str)
+    #undef log_err
+    #define log_err(str)
+    #undef log_err_P
+    #define log_err_P(str)
+    #undef log_raw_string
+    #define log_raw_string(str)
+#endif
 
 #define CMD_NAME_LENGTH 7
 #define RX_BUFFER_SIZE 12 /* 7 chars for cmd, 1 space, 3 chars for arg, NULL */
@@ -76,9 +93,7 @@ static const Cmd_Record_T* find_cmd(const char *cmd){
             return &(cmd_list[i]);
         }
     }
-    #ifdef SERIAL_RX_DEBUG
-        log_err_P(PROGMEM_CMD_NOT_FOUND);
-    #endif
+    log_err_P(PROGMEM_CMD_NOT_FOUND);
     return NULL;
 }
 

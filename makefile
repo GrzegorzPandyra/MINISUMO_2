@@ -39,7 +39,7 @@ MCU2_SRC_LIST = $(SRC_DIR)/mcu2.c \
 		   		$(SRC_DIR)/drive_ctrl.c \
 
 MCU1_DEFINES = 	-D MCU1 \
-				-D AI_DEBUG \
+				# -D AI_DEBUG \
 				# -D SERIAL_RX_DEBUG \
 				# -D SERIAL_TX_DEBUG \
 				# -D ICCM_DEBUG \

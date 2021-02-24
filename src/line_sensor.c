@@ -46,13 +46,6 @@ static void update_sensor_status(){
     for(uint8_t i=0; i<NUM_ELEMS(line_sensor_array); i++){
         bool new_status = !(PIND & SB(line_sensor_array[i].pin));
         line_sensor_array[i].status = new_status;
-        // if(line_sensor_array[i].status == new_status){
-        //     line_sensor_array[i].debounce_counter = 0;
-        // } else if(line_sensor_array[i].debounce_counter >= DEBOUNCE_COUNTER_MAX){
-        //     line_sensor_array[i].status = new_status;
-        //     line_sensor_array[i].debounce_counter = 0;
-        // } else
-        //     line_sensor_array[i].debounce_counter++;
     }
 }
 
