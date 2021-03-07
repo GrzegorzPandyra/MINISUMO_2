@@ -9,6 +9,8 @@
 #include "ICCM_message_catalog.h"
 #include "AI.h"
 #include <util/delay.h>
+#include "distance_sensor.h"
+#include "line_sensor.h"
 
 /* Disable debug logs if AI_DEBUG is not defined during build */
 #ifndef AI_DEBUG
@@ -28,8 +30,8 @@
     #define log_raw_string(str)
 #endif
 
-#define DS_TRIGGER_LEVEL 100
-#define RUN_DELAY_MS 5
+#define DS_TRIGGER_LEVEL_1 10
+#define DS_TRIGGER_LEVEL_2 100
 #define INIT_DELAY_MS 1000
 #define FORCE_STOP_DELAY_MS 1000
 #define DEFAULT_PWM_VALUE 50
@@ -45,6 +47,7 @@ static void LS2_LS3_triggered(void);
 static void LS3_LS4_triggered(void);
 static void LS4_LS1_triggered(void);
 static void DS_triggered(void);
+static void DS_target_locked(void);
 static void no_sensor_input(void);
 
 typedef enum AI_Vector_ID_Tag {
@@ -58,7 +61,8 @@ typedef enum AI_Vector_ID_Tag {
     LS3_LS4_TRIGGERED = 12,
     LS4_LS1_TRIGGERED = 9,
     DS_TRIGGERED = 20,
-    NO_SENSOR_INPUT = 21,
+    DS_TARGET_LOCKED = 21,
+    NO_SENSOR_INPUT = 22,
     STOP = 22,
 } AI_Vector_ID_T;
 
@@ -84,14 +88,19 @@ static const AI_Vector_T AI_VECTORS[] = {
     {LS3_LS4_TRIGGERED, LS3_LS4_triggered},
     {LS4_LS1_TRIGGERED, LS4_LS1_triggered},
     {DS_TRIGGERED, DS_triggered},
+    {DS_TARGET_LOCKED, DS_target_locked},
     {NO_SENSOR_INPUT, no_sensor_input},
     {STOP, stop},
-    {UNKNOWN, 0}
+    {UNKNOWN, NULL}
 };
 
+/**
+ * @brief Time of 90 deg rotation is dependant on the speed of motors which is dependant on PWM value.
+ * This table holds PWM vs time delays to achieve 90 deg rotation.
+ */
 static const Rotation_Adjustment_Record_T ROTATION_ADJUSTMENT_TABLE[] = {
-    {0,0},
-    {0,0},
+    {0,0}, /* Unavailable */
+    {0,0}, /* Unavailable */
     {20, 1286},
     {30, 500},
     {40, 333},
@@ -105,6 +114,8 @@ static const Rotation_Adjustment_Record_T ROTATION_ADJUSTMENT_TABLE[] = {
 
 static AI_Status_T AI_status = AI_IDLE;
 static uint8_t current_PWM = DEFAULT_PWM_VALUE;
+static uint16_t DS_reading = 0;
+static uint8_t LS_readings = 0;
 
 /**
  * @brief Get the rotation delay coresponding to current PWM value
@@ -124,59 +135,52 @@ static void variable_delay_ms(uint16_t delay){
     }
 }
 
-/* Implementation of AI vectors */
+/**********************************************************************
+* Implementation of AI vectors 
+***********************************************************************/
 static void stop(void){
     ICCM_send(MOTORS_STOP);
 }
 
 static void LS1_triggered(void){
     current_PWM = DEFAULT_PWM_VALUE;
-    ICCM_send(MOTORS_PWM_30);
-    _delay_ms(1);
+    ICCM_send(MOTORS_PWM_50);
     ICCM_send(MOTORS_GO_BACKWARD);
     _delay_ms(100);
     ICCM_send(MOTORS_TURN_RIGHT);
     variable_delay_ms(get_rotation_delay());
-    ICCM_send(MOTORS_GO_FORWARD);
 }
 
 static void LS2_triggered(void){
     current_PWM = DEFAULT_PWM_VALUE;
-    ICCM_send(MOTORS_PWM_30);
-    _delay_ms(1);
+    ICCM_send(MOTORS_PWM_50);
     ICCM_send(MOTORS_GO_BACKWARD);
     _delay_ms(100);
     ICCM_send(MOTORS_TURN_LEFT);
     variable_delay_ms(get_rotation_delay());
-    ICCM_send(MOTORS_GO_FORWARD);
 }
 
 static void LS3_triggered(void){
     current_PWM = DEFAULT_PWM_VALUE;
-    ICCM_send(MOTORS_PWM_30);
-    _delay_ms(1);
+    ICCM_send(MOTORS_PWM_50);
     ICCM_send(MOTORS_GO_FORWARD);
     _delay_ms(100);
     ICCM_send(MOTORS_TURN_LEFT);
     variable_delay_ms(get_rotation_delay());
-    ICCM_send(MOTORS_GO_BACKWARD);
 }
 
 static void LS4_triggered(void){
     current_PWM = DEFAULT_PWM_VALUE;
-    ICCM_send(MOTORS_PWM_30);
-    _delay_ms(1);
+    ICCM_send(MOTORS_PWM_50);
     ICCM_send(MOTORS_GO_FORWARD);
     _delay_ms(100);
     ICCM_send(MOTORS_TURN_RIGHT);
     variable_delay_ms(get_rotation_delay());
-    ICCM_send(MOTORS_GO_BACKWARD);
 }
 
 static void LS1_LS2_triggered(void){
     current_PWM = DEFAULT_PWM_VALUE;
-    ICCM_send(MOTORS_PWM_30);
-    _delay_ms(1);
+    ICCM_send(MOTORS_PWM_50);
     ICCM_send(MOTORS_GO_BACKWARD);
     _delay_ms(100);
     ICCM_send(MOTORS_TURN_RIGHT);
@@ -185,41 +189,63 @@ static void LS1_LS2_triggered(void){
 
 static void LS2_LS3_triggered(void){
     current_PWM = DEFAULT_PWM_VALUE;
-    ICCM_send(MOTORS_PWM_30);
-    _delay_ms(1);
+    ICCM_send(MOTORS_PWM_50);
     ICCM_send(MOTORS_TURN_LEFT);
     variable_delay_ms(get_rotation_delay());
-    ICCM_send(MOTORS_GO_FORWARD);
 }
 
 static void LS3_LS4_triggered(void){
     current_PWM = DEFAULT_PWM_VALUE;
-    ICCM_send(MOTORS_PWM_30);
-    _delay_ms(1);
+    ICCM_send(MOTORS_PWM_50);
     ICCM_send(MOTORS_GO_FORWARD);
 }
 
 static void LS4_LS1_triggered(void){
     current_PWM = DEFAULT_PWM_VALUE;
-    ICCM_send(MOTORS_PWM_30);
-    _delay_ms(1);
+    ICCM_send(MOTORS_PWM_50);
     ICCM_send(MOTORS_TURN_RIGHT);
     variable_delay_ms(get_rotation_delay());
-    ICCM_send(MOTORS_GO_FORWARD);
 }
 
 static void DS_triggered(void){
-    ICCM_send(MOTORS_PWM_50);
-    _delay_ms(1);
+    uint16_t initial_ds_reading = distance_sensor_get_status();
+    ICCM_send(MOTORS_PWM_70);
+    ICCM_send(MOTORS_TURN_LEFT);
+    _delay_ms(100);
+    uint16_t new_ds_reading = distance_sensor_get_status();
+    if(new_ds_reading > initial_ds_reading){
+        log_info("qq");
+        DS_target_locked();
+    } else {
+        ICCM_send(MOTORS_TURN_RIGHT);
+        _delay_ms(200);
+        new_ds_reading = distance_sensor_get_status();
+        if(new_ds_reading > initial_ds_reading){
+            DS_target_locked();
+        } else {
+            ICCM_send(MOTORS_TURN_LEFT);
+            _delay_ms(100);
+            ICCM_send(MOTORS_PWM_50);
+            ICCM_send(MOTORS_GO_FORWARD);
+        }
+    }
+}
+
+static void DS_target_locked(void){
+    ICCM_send(MOTORS_PWM_100);
     ICCM_send(MOTORS_GO_FORWARD);
 }
 
 static void no_sensor_input(void){
-    ICCM_send(MOTORS_PWM_30);
+    ICCM_send(MOTORS_PWM_50);
+    ICCM_send(MOTORS_GO_FORWARD);
 }
 
+/**********************************************************************
+* Determining the vector 
+***********************************************************************/
 static AI_Vector_T get_vector_by_ID(AI_Vector_ID_T id){
-    AI_Vector_T result = AI_VECTORS[0];
+    AI_Vector_T result = AI_VECTORS[11];
     for(uint8_t i = 0; i<arr_length(AI_VECTORS); i++){
         if(AI_VECTORS[i].id == id){
             result = AI_VECTORS[i];
@@ -230,25 +256,33 @@ static AI_Vector_T get_vector_by_ID(AI_Vector_ID_T id){
 }
 
 static AI_Vector_T calculate_vector(uint8_t ls_reading, uint16_t ds_reading){
-    AI_Vector_T result = get_vector_by_ID((AI_Vector_ID_T)ls_reading);
-    AI_Status_T current_AI_status = AI_status;
+    // AI_Vector_T result = get_vector_by_ID((AI_Vector_ID_T)ls_reading);
+    AI_Vector_T result = {UNKNOWN, NULL};
+    AI_Status_T previous_AI_status = AI_status;
     if(result.id == UNKNOWN){
-        if(ds_reading > DS_TRIGGER_LEVEL){
+        if(ds_reading > DS_TRIGGER_LEVEL_1 && ds_reading < DS_TRIGGER_LEVEL_2){
             result = get_vector_by_ID(DS_TRIGGERED);
+            AI_status = AI_TRIGGERED;
+        } else if(ds_reading >= DS_TRIGGER_LEVEL_2){
+            result = get_vector_by_ID(DS_TARGET_LOCKED);
             AI_status = AI_ATTACK;
         } else {
-            result = get_vector_by_ID(NO_SENSOR_INPUT);
+            // result = get_vector_by_ID(NO_SENSOR_INPUT);
+            log_info("no input");
             AI_status = AI_SEARCH;
         }
     } else {
         AI_status = AI_R2R;
     }
-    if(current_AI_status != AI_status){
+    if(previous_AI_status != AI_status){
         print_AI_status();
     }
     return result;
 }
 
+/**********************************************************************
+* Public functions 
+***********************************************************************/
 void print_AI_status(void){
     switch (AI_status){
         case AI_IDLE:
@@ -257,6 +291,8 @@ void print_AI_status(void){
         case AI_ARMED:
             log_info_P(PROGMEM_AI_STATUS_ARMED);
             break;
+        case AI_TRIGGERED:
+            log_info_P(PROGMEM_AI_STATUS_SEARCH);
         case AI_SEARCH:
             log_info_P(PROGMEM_AI_STATUS_SEARCH);
             break;
@@ -272,8 +308,15 @@ void print_AI_status(void){
     }
 }
 
-void AI_run(uint8_t ls_readings, uint16_t ds_reading){
-    const AI_Vector_T vect = calculate_vector(ls_readings, ds_reading);
+AI_Status_T AI_get_status(void){
+    return AI_status;
+}
+
+void AI_run(void){
+    DS_reading = distance_sensor_get_status();
+    // log_data_1("DS=%d",DS_reading);
+    LS_readings = line_sensor_get_status();
+    const AI_Vector_T vect = calculate_vector(LS_readings, DS_reading);
     vect.cbk();
     _delay_ms(5);
 }
@@ -282,26 +325,20 @@ void AI_init(void){
     AI_status = AI_ARMED;
     log_info_P(PROGMEM_AI_STATUS_ARMED);
     log_info_P(PROGMEM_AI_INIT_IN);
-    log_raw_string("5..");
+    log_raw_string("5..\n");
     _delay_ms(INIT_DELAY_MS);
-    log_raw_string("4..");
+    log_raw_string("4..\n");
     _delay_ms(INIT_DELAY_MS);
-    log_raw_string("3..");
+    log_raw_string("3..\n");
     _delay_ms(INIT_DELAY_MS);
-    log_raw_string("2..");
+    log_raw_string("2..\n");
     _delay_ms(INIT_DELAY_MS);
     log_raw_string("1..\n");
     _delay_ms(INIT_DELAY_MS);
     log_info_P(PROGMEM_AI_STATUS_SEARCH);
     AI_status = AI_SEARCH;
-    ICCM_send(MOTORS_GO_FORWARD);
-    _delay_ms(1);
-    ICCM_send(MOTORS_PWM_30);
-}
-
-AI_Status_T AI_get_status(void){
-    print_AI_status();
-    return AI_status;
+    // ICCM_send(MOTORS_GO_FORWARD);
+    ICCM_send(MOTORS_PWM_50);
 }
 
 void AI_force_stop(void){

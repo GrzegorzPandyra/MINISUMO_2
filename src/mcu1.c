@@ -10,13 +10,8 @@
 #include "serial_tx.h"
 #include "ISR.h"
 #include "distance_sensor.h"
-#include "line_sensor.h"
 #include "ADC.h"
 #include "AI.h"
-
-
-static uint16_t DS_reading = 0;
-static uint8_t LS_readings = 0;
 
 /**
  * @brief Main function
@@ -44,10 +39,7 @@ int main(){
             case AI_SEARCH:
             case AI_ATTACK:
             case AI_R2R:
-                DS_reading = distance_sensor_get_status();
-                LS_readings = line_sensor_get_status();
-                log_data_1("LS status=%d", LS_readings);
-                AI_run(LS_readings, DS_reading);
+                AI_run();
                 break;
             case AI_IDLE:
             case AI_ARMED:

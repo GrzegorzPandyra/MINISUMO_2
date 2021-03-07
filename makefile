@@ -39,7 +39,7 @@ MCU2_SRC_LIST = $(SRC_DIR)/mcu2.c \
 		   		$(SRC_DIR)/drive_ctrl.c \
 
 MCU1_DEFINES = 	-D MCU1 \
-				# -D AI_DEBUG \
+				-D AI_DEBUG \
 				# -D SERIAL_RX_DEBUG \
 				# -D SERIAL_TX_DEBUG \
 				# -D ICCM_DEBUG \
@@ -51,9 +51,9 @@ MCU2_DEFINES = 	-D MCU2 \
 
 #make all rule
 all: minisumo2_mcu1.elf minisumo2_mcu1.hex minisumo2_mcu2.elf minisumo2_mcu2.hex
-	@echo '\t\t\t\t******                             ******'
-	@echo '\t\t\t\t****  Finished building all targets  ****'
-	@echo '\t\t\t\t******                             ******'
+	@echo '				******                             ******'
+	@echo '				****  Finished building all targets  ****'
+	@echo '				******                             ******'
 
 #compile project mcu1 into .elf file
 minisumo2_mcu1.elf: 
