@@ -21,7 +21,7 @@ static const char ICCM_RX_BUFFER_CLEARED_P[]   PROGMEM = "ICCM RX BUFFER cleared
 
 
 char data_conversion_buffer[DATA_CONVERSION_BUFFER_SIZE] = {0};
-const char* progmem_string_table[] PROGMEM = {
+const char* const  progmem_string_table[] PROGMEM = {
     TX_BUFFER_OVERFLOW_P, 
     LOG_BUFFERING_ENABLED_P,
     LOG_BUFFERING_DISABLED_P,
