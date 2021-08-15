@@ -199,6 +199,8 @@ void serial_init(uint32_t f_cpu, uint32_t baudrate){
     
     /* Clear INT0 flag */
     GIFR |= 1<<INTF0;
+
+    log_info_P(SERIAL_INIT);
 }
 
 /**

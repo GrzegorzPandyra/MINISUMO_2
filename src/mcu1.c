@@ -7,48 +7,53 @@
 #include <stdint.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <util/delay.h>
 #include "serial_tx.h"
 #include "ISR.h"
-#include "ICCM.h"
 #include "distance_sensor.h"
 #include "line_sensor.h"
 #include "ADC.h"
 #include "AI.h"
 
-#include "stdio.h"
+
+static uint16_t DS_reading = 0;
+static uint8_t LS_readings = 0;
 
 /**
  * @brief Main function
  */ 
 int main(){
+    PORTC |= 1<<MASTER_INIT;
     serial_init(F_CPU, BAUD);
     ICCM_init();
     ADC_init();
     sei();
     log_info_P(MCU1_ONLINE);
-    // uint16_t DS_reading = 0;
-    // uint8_t LS_readings = 0;
-    _delay_ms(5000);
-    // AI_init();
-    log_info("READY");
+    log_info_P(AI_STATUS_IDLE);
     while(1)
     { 
-        // _delay_ms(5);
-        // DS_reading = distance_sensor_get_status();
-        // LS_readings = line_sensor_get_status();
-        // AI_run(LS_readings, DS_reading);
-        uint8_t x = 55;
-        char z = 'z';
-        char tab[] = "tablica";
-        int y = 20; //0x14
-        log_data_1("x=%d", x);
-        log_data_1("z=%c", z);
-        log_data_1("tab=%s", tab);
-        log_data_1("y=%d", y);
-        log_data_1("y hex=%x", y);
-        // sprintf(data_conversion_buffer, "raw x=%x", x);
-        // serial_log(get_metadata(INFO), data_conversion_buffer);
+        if((PINC & (1<<MASTER_INIT)) == 0){
+            if(AI_get_status() == AI_IDLE){
+                AI_init();
+            } else {
+                AI_force_stop();
+            }
+        }
+
+        switch (AI_get_status()){
+        case AI_SEARCH:
+        case AI_ATTACK:
+        case AI_R2R:
+            DS_reading = distance_sensor_get_status();
+            LS_readings = line_sensor_get_status();
+            AI_run(LS_readings, DS_reading);
+            break;
+        case AI_IDLE:
+        case AI_ARMED:
+            /* Do nothing */
+            break;
+        default:
+            break;
+        }
     }
     return 0;
 }
