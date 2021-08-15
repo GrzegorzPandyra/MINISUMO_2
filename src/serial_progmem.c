@@ -35,8 +35,8 @@ static const char ADC_INIT_P[]                 PROGMEM = "ADC init";
 
 
 
-char data_conversion_buffer[DATA_CONVERSION_BUFFER_SIZE] = {};
-const char* progmem_string_table[] PROGMEM = {
+char data_conversion_buffer[DATA_CONVERSION_BUFFER_SIZE] = {0};
+const char* const  progmem_string_table[] PROGMEM = {
     TX_BUFFER_OVERFLOW_P, 
     LOG_BUFFERING_ENABLED_P,
     LOG_BUFFERING_DISABLED_P,

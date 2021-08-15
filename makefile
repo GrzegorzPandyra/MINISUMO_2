@@ -40,9 +40,9 @@ MCU2_SRC_LIST = $(SRC_DIR)/mcu2.c \
 
 #make all rule
 all: minisumo2_mcu1.elf minisumo2_mcu1.hex minisumo2_mcu2.elf minisumo2_mcu2.hex
-	@echo '\t\t\t\t******                             ******'
-	@echo '\t\t\t\t****  Finished building all targets  ****'
-	@echo '\t\t\t\t******                             ******'
+	@echo '			******                             ******'
+	@echo '			****  Finished building all targets  ****'
+	@echo '			******                             ******'
 
 #compile project mcu1 into .elf file
 minisumo2_mcu1.elf: 
