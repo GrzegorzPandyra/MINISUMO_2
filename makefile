@@ -24,22 +24,25 @@ CFLAGS=-I $(INC_DIR) -Wall -Os -std=c99
 MCU1_SRC_LIST = $(SRC_DIR)/mcu1.c \
 		   		$(SRC_DIR)/serial_tx.c \
 		   		$(SRC_DIR)/serial_rx.c \
-		   		$(SRC_DIR)/iccm.c \
+		   		$(SRC_DIR)/serial_progmem.c \
+		   		$(SRC_DIR)/ICCM.c \
 		   		$(SRC_DIR)/distance_sensor.c \
 		   		$(SRC_DIR)/line_sensor.c \
 		   		$(SRC_DIR)/ADC.c \
+		   		$(SRC_DIR)/AI.c \
 
 MCU2_SRC_LIST = $(SRC_DIR)/mcu2.c \
 		   		$(SRC_DIR)/serial_tx.c \
 		   		$(SRC_DIR)/serial_rx.c \
-		   		$(SRC_DIR)/iccm.c \
+		   		$(SRC_DIR)/serial_progmem.c \
+		   		$(SRC_DIR)/ICCM.c \
 		   		$(SRC_DIR)/drive_ctrl.c \
 
 #make all rule
 all: minisumo2_mcu1.elf minisumo2_mcu1.hex minisumo2_mcu2.elf minisumo2_mcu2.hex
-	@echo '\t\t\t\t******                             ******'
-	@echo '\t\t\t\t****  Finished building all targets  ****'
-	@echo '\t\t\t\t******                             ******'
+	@echo '			******                             ******'
+	@echo '			****  Finished building all targets  ****'
+	@echo '			******                             ******'
 
 #compile project mcu1 into .elf file
 minisumo2_mcu1.elf: 

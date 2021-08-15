@@ -33,6 +33,7 @@
 #define DS2 PC1
 #define NUM_DISTANCE_SENSORS 1
 
+/* Cmds specific to MCU1*/
 #define MCU_SPECIFIC_SERIAL_CMD_LIST \
 
 #endif
@@ -52,15 +53,9 @@
 #define M4_IN2 PB0
 #define M4_PWM PB1
 
+/* Cmds specific to MCU2*/
 #define MCU_SPECIFIC_SERIAL_CMD_LIST \
-    {"drvfw", drive_ctrl_go_forward}, \
-    {"drvbw", drive_ctrl_go_backward}, \
-    {"drvtl", drive_ctrl_turn_left}, \
-    {"drvtr", drive_ctrl_turn_right}, \
-    {"drvinit", drive_ctrl_init}, \
-    {"drvpwmen", drive_ctrl_enable_PWM}, \
-    {"drvpwmdis", drive_ctrl_disable_PWM}, \
-    {"drvstop", drive_ctrl_stop}
+    {"drvinit", drive_ctrl_init}, 
 
 #endif
 

@@ -8,6 +8,7 @@
 #include <avr/io.h>
 #include "serial_tx.h"
 #include "string.h"
+#include "ICCM_message_catalog.h"
 
 /* Local macro definitions */
 #define ICCM_RX_BUFFER_SIZE 20
@@ -93,7 +94,7 @@ bool static is_rx_buffer_full(void){
  */
 bool to_rx_buffer(const char c){
     if(is_rx_buffer_full()){
-        serial_err_P(ICCM_RX_BUFFER_OVERFLOW);
+        log_err_P(ICCM_RX_BUFFER_OVERFLOW);
         rx_buffer[ICCM_RX_BUFFER_SIZE-1] = NULL_CHAR;
         return false;
     }else{
@@ -158,7 +159,7 @@ void ICCM_init(void){
 void ICCM_send(char *str){
     iccm_status = TX_IN_PROGRESS;
     uint8_t str_len = cstrlen(str);
-    // serial_data_str_P(ICCM_SENDING_DATA, str, str_len);
+    // log_info_P(ICCM_SENDING_DATA, str, str_len);
     
     ICCM_DataFrame_T start_frame = create_frame(STX);
     transmit(start_frame);
@@ -181,6 +182,7 @@ void ICCM_read_rx_buffer(char *buff_out, uint8_t *data_length){
     if(str_len > 0){
         memcpy(buff_out, rx_buffer, str_len);
         *data_length = str_len;
+        log_data_1("%s", rx_buffer);
         ICCM_clear_rx_buffer();
     }
 }

@@ -12,6 +12,7 @@
 #include "common_const.h"
 #include "serial_tx.h"
 #include "ICCM.h"
+#include "ICCM_message_catalog.h"
 
 #define CB(x) (~(1<<x))
 #define SB(x) (1<<x)
@@ -153,6 +154,8 @@ void drive_ctrl_init(void){
     DDRD |= SB(M4_IN1);
     DDRB |= SB(M4_IN2);
     DDRB |= SB(M4_PWM);
+    
+    drive_ctrl_enable_PWM();
 }
 
 void drive_ctrl_PWM(void){
@@ -172,4 +175,62 @@ void drive_ctrl_PWM(void){
 
 void drive_ctrl_set_PWM(const uint8_t pwm){
     PWM = (pwm > MAX_PWM)?MAX_PWM:pwm;
+}
+
+void drive_ctrl_run(void){
+    static char rx_buff[10];
+    static uint8_t data_length = 0;
+    if(ICCM_is_data_available()){
+        ICCM_read_rx_buffer(rx_buff, &data_length);
+        switch (rx_buff[0])
+        {
+        case MOTORS_GO_FORWARD:
+            drive_ctrl_go_forward();
+            break;
+        case MOTORS_GO_BACKWARD:
+            drive_ctrl_go_backward();
+            break;
+        case MOTORS_TURN_RIGHT:
+            drive_ctrl_turn_right();
+            break;
+        case MOTORS_TURN_LEFT:
+            drive_ctrl_turn_left();
+            break;
+        case MOTORS_STOP:
+            drive_ctrl_stop();
+            break;
+        case MOTORS_PWM_10:
+            drive_ctrl_set_PWM(10);
+            break;
+        case MOTORS_PWM_20:
+            drive_ctrl_set_PWM(20);
+            break;
+        case MOTORS_PWM_30:
+            drive_ctrl_set_PWM(30);
+            break;
+        case MOTORS_PWM_40:
+            drive_ctrl_set_PWM(40);
+            break;
+        case MOTORS_PWM_50:
+            drive_ctrl_set_PWM(50);
+            break;
+        case MOTORS_PWM_60:
+            drive_ctrl_set_PWM(60);
+            break;
+        case MOTORS_PWM_70:
+            drive_ctrl_set_PWM(70);
+            break;
+        case MOTORS_PWM_80:
+            drive_ctrl_set_PWM(80);
+            break;
+        case MOTORS_PWM_90:
+            drive_ctrl_set_PWM(90);
+            break;
+        case MOTORS_PWM_100:
+            drive_ctrl_set_PWM(100);
+            break;
+        default:
+            break;
+        }
+    }
 }

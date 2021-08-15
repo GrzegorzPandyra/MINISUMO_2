@@ -10,4 +10,6 @@
 #define LF '\n'
 #define CR '\r'
 
+#define arr_length(x) (sizeof(x)/sizeof(x[0]))
+
 #endif /* COMMON_CONST_GUARD */

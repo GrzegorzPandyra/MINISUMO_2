@@ -12,7 +12,6 @@
 #define CB(x) (~(1<<(x)))       
 #define NUM_ELEMS(x) (sizeof(x)/sizeof(x[0]))
 #define DEBOUNCE_COUNTER_MAX 3
-#define NULL 0
 
 typedef struct Line_Sensor_Tag{
     uint8_t pin;
@@ -67,12 +66,12 @@ uint8_t line_sensor_get_status(){
         force_bit(&result, line_sensor_array[i].status, i);
 
     // if(result & 0x01)
-    //     serial_info("LS1");
+    //     log_info("LS1");
     // if(result & 0x02)
-    //     serial_info("LS2");
+    //     log_info("LS2");
     // if(result & 0x04)
-    //     serial_info("LS3");
+    //     log_info("LS3");
     // if(result & 0x08)
-    //     serial_info("LS4");
+    //     log_info("LS4");
     return result;
 }
