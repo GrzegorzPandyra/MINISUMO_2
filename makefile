@@ -103,8 +103,8 @@ clean:
 #memory analysis
 mem: minisumo2_mcu1.elf minisumo2_mcu2.elf
 	@echo ' ********************************************************************************************************* '
-	avr-size --mcu=atmega8 --format=avr out/minisumo2_mcu1.elf
+	avr-size --format=berkeley out/minisumo2_mcu1.elf
 	@echo ' ********************************************************************************************************* '
-	avr-size --mcu=atmega8 --format=avr out/minisumo2_mcu2.elf
+	avr-size --format=berkeley out/minisumo2_mcu2.elf
 
 

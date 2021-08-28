@@ -29,12 +29,11 @@
     #define LS4 PD7
 
     /* AI init btn */
-    #define MASTER_INIT PC3
+    #define MASTER_INIT PB1
 
     /* distance sensor config */
     #define DS1 PC0
     #define DS2 PC1
-    #define NUM_DISTANCE_SENSORS 1
 
     /* Cmds specific to MCU1*/
     #define MCU_SPECIFIC_SERIAL_CMD_LIST \

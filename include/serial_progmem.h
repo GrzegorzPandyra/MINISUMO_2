@@ -21,13 +21,13 @@
         PROGMEM_AI_STATUS_SEARCH,
         PROGMEM_AI_STATUS_TRIGGERED,
         PROGMEM_AI_STATUS_ATTACK,
-        PROGMEM_AI_STATUS_R2R,
+        PROGMEM_AI_STATUS_RETURN,
         PROGMEM_AI_FORCED_STOP,
         PROGMEM_AI_INIT_IN
     } Progmem_Table_Index_T;
 
     /* Global variables */
     extern char data_conversion_buffer[];
-    extern const char* progmem_string_table[];
+    extern const char* const progmem_string_table[];
 
 #endif /* SERIAL_PROGMEM_GUARD */

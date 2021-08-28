@@ -17,37 +17,18 @@
  * @brief Main function
  */ 
 int main(){
-    PORTC |= 1<<MASTER_INIT;
+    /* Initialization */
+    PORTB |= 1<<MASTER_INIT;
     serial_init(F_CPU, BAUD);
     ICCM_init();
     ADC_init();
+    distance_sensor_init();
     sei();
     log_info_P(PROGMEM_MCU1_ONLINE);
+    /* MCU1 start processing */
     print_AI_status();
-    while(1)
-    { 
-        if((PINC & (1<<MASTER_INIT)) == 0){
-            if(AI_get_status() == AI_IDLE){
-                AI_init();
-            } else {
-                AI_force_stop();
-                print_AI_status();
-            }
-        }
-
-        switch (AI_get_status()){
-            case AI_SEARCH:
-            case AI_ATTACK:
-            case AI_R2R:
-                AI_run();
-                break;
-            case AI_IDLE:
-            case AI_ARMED:
-                /* Do nothing */
-                break;
-            default:
-                break;
-        }
+    while(1){ 
+        AI_run();
     }
     return 0;
 }

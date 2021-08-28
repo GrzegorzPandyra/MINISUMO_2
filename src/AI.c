@@ -99,6 +99,7 @@ static const AI_Vector_T AI_VECTORS[] = {
  * This table holds PWM vs time delays to achieve 90 deg rotation.
  */
 static const Rotation_Adjustment_Record_T ROTATION_ADJUSTMENT_TABLE[] = {
+    /* {PWM, delay_us} */
     {0,0}, /* Unavailable */
     {0,0}, /* Unavailable */
     {20, 1286},
@@ -114,7 +115,8 @@ static const Rotation_Adjustment_Record_T ROTATION_ADJUSTMENT_TABLE[] = {
 
 static AI_Status_T AI_status = AI_IDLE;
 static uint8_t current_PWM = DEFAULT_PWM_VALUE;
-static uint16_t DS_reading = 0;
+static uint16_t DS1_reading = 0;
+static uint16_t DS2_reading = 0;
 static uint8_t LS_readings = 0;
 
 /**
@@ -208,27 +210,27 @@ static void LS4_LS1_triggered(void){
 }
 
 static void DS_triggered(void){
-    uint16_t initial_ds_reading = distance_sensor_get_status();
-    ICCM_send(MOTORS_PWM_70);
-    ICCM_send(MOTORS_TURN_LEFT);
-    _delay_ms(100);
-    uint16_t new_ds_reading = distance_sensor_get_status();
-    if(new_ds_reading > initial_ds_reading){
-        log_info("qq");
-        DS_target_locked();
-    } else {
-        ICCM_send(MOTORS_TURN_RIGHT);
-        _delay_ms(200);
-        new_ds_reading = distance_sensor_get_status();
-        if(new_ds_reading > initial_ds_reading){
-            DS_target_locked();
-        } else {
-            ICCM_send(MOTORS_TURN_LEFT);
-            _delay_ms(100);
-            ICCM_send(MOTORS_PWM_50);
-            ICCM_send(MOTORS_GO_FORWARD);
-        }
-    }
+    // uint16_t initial_ds_reading = distance_sensor_get_status();
+    // ICCM_send(MOTORS_PWM_70);
+    // ICCM_send(MOTORS_TURN_LEFT);
+    // _delay_ms(100);
+    // uint16_t new_ds_reading = distance_sensor_get_status();
+    // if(new_ds_reading > initial_ds_reading){
+    //     log_info("qq");
+    //     DS_target_locked();
+    // } else {
+    //     ICCM_send(MOTORS_TURN_RIGHT);
+    //     _delay_ms(200);
+    //     new_ds_reading = distance_sensor_get_status();
+    //     if(new_ds_reading > initial_ds_reading){
+    //         DS_target_locked();
+    //     } else {
+    //         ICCM_send(MOTORS_TURN_LEFT);
+    //         _delay_ms(100);
+    //         ICCM_send(MOTORS_PWM_50);
+    //         ICCM_send(MOTORS_GO_FORWARD);
+    //     }
+    // }
 }
 
 static void DS_target_locked(void){
@@ -272,7 +274,7 @@ static AI_Vector_T calculate_vector(uint8_t ls_reading, uint16_t ds_reading){
             AI_status = AI_SEARCH;
         }
     } else {
-        AI_status = AI_R2R;
+        AI_status = AI_RETURN;
     }
     if(previous_AI_status != AI_status){
         print_AI_status();
@@ -292,15 +294,15 @@ void print_AI_status(void){
             log_info_P(PROGMEM_AI_STATUS_ARMED);
             break;
         case AI_TRIGGERED:
-            log_info_P(PROGMEM_AI_STATUS_SEARCH);
+            log_info_P(PROGMEM_AI_STATUS_TRIGGERED);
         case AI_SEARCH:
             log_info_P(PROGMEM_AI_STATUS_SEARCH);
             break;
         case AI_ATTACK:
             log_info_P(PROGMEM_AI_STATUS_ATTACK);
             break;
-        case AI_R2R:
-            log_info_P(PROGMEM_AI_STATUS_R2R);
+        case AI_RETURN:
+            log_info_P(PROGMEM_AI_STATUS_RETURN);
             break;
         default:
             log_err("AI status unknown");
@@ -313,28 +315,51 @@ AI_Status_T AI_get_status(void){
 }
 
 void AI_run(void){
-    DS_reading = distance_sensor_get_status();
-    // log_data_1("DS=%d",DS_reading);
-    LS_readings = line_sensor_get_status();
-    const AI_Vector_T vect = calculate_vector(LS_readings, DS_reading);
-    vect.cbk();
-    _delay_ms(5);
+    /* Read button to Start/Stop AI */
+    if((PINB & (1<<MASTER_INIT)) == 0){
+        if(AI_get_status() == AI_IDLE){
+            AI_init();
+        } else {
+            AI_force_stop();
+            print_AI_status();
+        }
+    }
+    /* Process AI status */
+    switch (AI_get_status()){
+        case AI_SEARCH:
+        case AI_ATTACK:
+        case AI_RETURN:
+            DS1_reading = distance_sensor_get_status(DS1_ID);
+            DS2_reading = distance_sensor_get_status(DS2_ID);
+            log_data_2("DS1=%d DS2=%d",DS1_reading, DS2_reading);
+            LS_readings = line_sensor_get_status();
+            // const AI_Vector_T vect = calculate_vector(LS_readings, DS_reading);
+            // vect.cbk();
+            _delay_ms(5);
+            break;
+        case AI_IDLE:
+        case AI_ARMED:
+            /* Do nothing */
+            break;
+        default:
+            break;
+    }
 }
 
 void AI_init(void){
     AI_status = AI_ARMED;
     log_info_P(PROGMEM_AI_STATUS_ARMED);
     log_info_P(PROGMEM_AI_INIT_IN);
-    log_raw_string("5..\n");
-    _delay_ms(INIT_DELAY_MS);
-    log_raw_string("4..\n");
-    _delay_ms(INIT_DELAY_MS);
-    log_raw_string("3..\n");
-    _delay_ms(INIT_DELAY_MS);
-    log_raw_string("2..\n");
-    _delay_ms(INIT_DELAY_MS);
-    log_raw_string("1..\n");
-    _delay_ms(INIT_DELAY_MS);
+    // log_raw_string("5..\n");
+    // _delay_ms(INIT_DELAY_MS);
+    // log_raw_string("4..\n");
+    // _delay_ms(INIT_DELAY_MS);
+    // log_raw_string("3..\n");
+    // _delay_ms(INIT_DELAY_MS);
+    // log_raw_string("2..\n");
+    // _delay_ms(INIT_DELAY_MS);
+    // log_raw_string("1..\n");
+    // _delay_ms(INIT_DELAY_MS);
     log_info_P(PROGMEM_AI_STATUS_SEARCH);
     AI_status = AI_SEARCH;
     // ICCM_send(MOTORS_GO_FORWARD);

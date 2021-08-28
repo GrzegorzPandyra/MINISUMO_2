@@ -11,16 +11,32 @@
     #include "serial_rx.h"
     #include "ICCM.h"
     #include "config.h"
+    #include "ADC.h"
+
 
     #ifdef MCU1
         #include "distance_sensor.h"
+        static uint8_t current_ADC_channel = CH_DS1;
 
         /**
          * @brief Interrupt routine executed when ADC completes conversion
          */
         ISR(ADC_vect){  
             volatile uint16_t adc_val = ADCW;
-            distance_sensor_update_status(adc_val);
+            switch(current_ADC_channel){
+                case CH_DS1:
+                    ADC_switch_channel(CH_DS1);
+                    distance_sensor_read_ADC(DS1_ID, adc_val);
+                    current_ADC_channel = CH_DS2;
+                    break;
+                case CH_DS2:
+                    ADC_switch_channel(CH_DS2);
+                    distance_sensor_read_ADC(DS2_ID, adc_val);
+                    current_ADC_channel = CH_DS1;
+                    break;
+                default:
+                    break;
+            }
         }
 
         /**

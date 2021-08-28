@@ -22,13 +22,15 @@ static const char PROGMEM_AI_STATUS_ARMED_P[]          PROGMEM = "AI status: ARM
 static const char PROGMEM_AI_STATUS_SEARCH_P[]         PROGMEM = "AI status: SEARCH";
 static const char PROGMEM_AI_STATUS_TRIGGERED_P[]      PROGMEM = "AI status: TRIGGERED";
 static const char PROGMEM_AI_STATUS_ATTACK_P[]         PROGMEM = "AI status: ATTACK";
-static const char PROGMEM_AI_STATUS_R2R_P[]            PROGMEM = "AI status: R2R";
+static const char PROGMEM_AI_STATUS_RETURN_P[]         PROGMEM = "AI status: R2R";
 static const char PROGMEM_AI_FORCED_STOP_P[]           PROGMEM = "AI forced stop";
 static const char PROGMEM_AI_INIT_IN_P[]               PROGMEM = "AI init in:";
 
 
-
+/* Buffer used for data exchange between RAM and FLASH */
 char data_conversion_buffer[DATA_CONVERSION_BUFFER_SIZE] = {};
+
+/* Table for accessing PROGMEM strings*/
 const char* const progmem_string_table[] PROGMEM = {
     PROGMEM_TX_BUFFER_OVERFLOW_P, 
     PROGMEM_LOG_BUFFERING_ENABLED_P,
@@ -45,7 +47,7 @@ const char* const progmem_string_table[] PROGMEM = {
     PROGMEM_AI_STATUS_SEARCH_P,
     PROGMEM_AI_STATUS_TRIGGERED_P,
     PROGMEM_AI_STATUS_ATTACK_P,
-    PROGMEM_AI_STATUS_R2R_P,
+    PROGMEM_AI_STATUS_RETURN_P,
     PROGMEM_AI_FORCED_STOP_P,
     PROGMEM_AI_INIT_IN_P
 };
