@@ -20,11 +20,14 @@ void ADC_init(void){
     /* Internal 2.56V voltage ref */
     ADMUX |= (1<<REFS0);
     /* Set ADC channel to match DS1 */
-    ADMUX &= 0xF0;
+    ADC_switch_channel(CH_DS1);
     /* Enable interrupt on ADC conversion finished */
     ADCSRA |= 1<<ADIE;
     /* Enable ADC*/
     ADCSRA |= 1<<ADEN;
     timer0_init();
-    log_info_P(ADC_INIT);
 } 
+
+void ADC_switch_channel(ADC_CHANNEL_ID_T channel_id){
+    ADMUX = (uint8_t)channel_id;
+}

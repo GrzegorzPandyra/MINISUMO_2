@@ -10,50 +10,25 @@
 #include "serial_tx.h"
 #include "ISR.h"
 #include "distance_sensor.h"
-#include "line_sensor.h"
 #include "ADC.h"
 #include "AI.h"
-
-
-static uint16_t DS_reading = 0;
-static uint8_t LS_readings = 0;
 
 /**
  * @brief Main function
  */ 
 int main(){
-    PORTC |= 1<<MASTER_INIT;
+    /* Initialization */
+    PORTB |= 1<<MASTER_INIT;
     serial_init(F_CPU, BAUD);
     ICCM_init();
     ADC_init();
+    distance_sensor_init();
     sei();
-    log_info_P(MCU1_ONLINE);
-    log_info_P(AI_STATUS_IDLE);
-    while(1)
-    { 
-        if((PINC & (1<<MASTER_INIT)) == 0){
-            if(AI_get_status() == AI_IDLE){
-                AI_init();
-            } else {
-                AI_force_stop();
-            }
-        }
-
-        switch (AI_get_status()){
-        case AI_SEARCH:
-        case AI_ATTACK:
-        case AI_R2R:
-            DS_reading = distance_sensor_get_status();
-            LS_readings = line_sensor_get_status();
-            AI_run(LS_readings, DS_reading);
-            break;
-        case AI_IDLE:
-        case AI_ARMED:
-            /* Do nothing */
-            break;
-        default:
-            break;
-        }
+    log_info_P(PROGMEM_MCU1_ONLINE);
+    /* MCU1 start processing */
+    print_AI_status();
+    while(1){ 
+        AI_run();
     }
     return 0;
 }

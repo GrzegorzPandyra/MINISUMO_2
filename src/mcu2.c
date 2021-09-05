@@ -6,7 +6,6 @@
 #include <stdint.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <util/delay.h>
 #include "serial_tx.h"
 #include "ISR.h"
 #include "ICCM.h"
@@ -22,7 +21,7 @@ int main(){
     ICCM_init();
     drive_ctrl_init();
     sei();
-    log_info_P(MCU2_ONLINE);
+    log_info_P(PROGMEM_MCU2_ONLINE);
 
     while(1) /* Loop the messsage continously */
     { 

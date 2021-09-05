@@ -1,8 +1,11 @@
 /** @file drive_ctrl.c
-*   @brief Interface for controlling the motors
+*   @brief Interface for controlling the motors (direction and power)
 *   Motors are numbered as follows:
 *   |1 2|
 *   |4 3|
+*
+*   @note PWM control works in range of 20% - 100% with step every 10%. Values below 20% are insufficient for turning around, therefore should not be used.
+*   @note Functions ended with _cbk suffix are for debugging only!
 */
 #include <avr/io.h>
 #include <stdlib.h>
@@ -13,6 +16,7 @@
 #include "serial_tx.h"
 #include "ICCM.h"
 #include "ICCM_message_catalog.h"
+#include <util/delay.h>
 
 #define CB(x) (~(1<<x))
 #define SB(x) (1<<x)
@@ -28,6 +32,8 @@
 #define MAX_PWM MAX_INT_CNT
 #define TCNT0_INITIAL 254
 #define DRVPWM_CMD_ARGUMENT_OFFSET 7
+#define DRVTR_ARGUMENT_OFFSET 6
+#define ASCII_NUM_OFFSET 48
 
 static uint8_t PWM = 80;
 
@@ -160,7 +166,6 @@ void drive_ctrl_PWM_processing(void){
 
 /* High-level functions*/
 void drive_ctrl_init(void){
-    log_info_P(DRV_CTRL_INIT);
     timer0_init(); 
 
     /*motor 1*/
@@ -205,9 +210,6 @@ void drive_ctrl_run(void){
         case MOTORS_STOP:
             stop();
             break;
-        case MOTORS_PWM_10:
-            set_PWM(10);
-            break;
         case MOTORS_PWM_20:
             set_PWM(20);
             break;
@@ -238,7 +240,7 @@ void drive_ctrl_run(void){
         default:
             break;
         }
-    }
+    } 
 }
 
 /* Debug callbacks */
@@ -257,7 +259,7 @@ void drive_ctrl_set_pwm_cbk(const void *data, size_t data_len){
  * @param data data in format: drvctrl f/b/l/r/s, example: drvctrl f
  * @param data_len size of @data
  */
-void drive_ctrl_set_movement(const void *data, size_t data_len){
+void drive_ctrl_set_movement_cbk(const void *data, size_t data_len){
     char subcmd = ((const char*)data)[8];
     switch (subcmd){
     case 'f':
@@ -278,4 +280,27 @@ void drive_ctrl_set_movement(const void *data, size_t data_len){
     default:
         break;
     }
+}
+
+void drive_ctrl_turn_right_cbk(const void *data, size_t data_len){
+    const uint8_t *data_ptr = (const uint8_t*)data;
+    uint16_t arg_value = (data_ptr[DRVTR_ARGUMENT_OFFSET]-ASCII_NUM_OFFSET)*100;
+    arg_value += (data_ptr[DRVTR_ARGUMENT_OFFSET+1]-ASCII_NUM_OFFSET)*10;
+    arg_value += (data_ptr[DRVTR_ARGUMENT_OFFSET+2]-ASCII_NUM_OFFSET);
+    turn_right();
+    switch (arg_value){
+    case 100:
+        _delay_ms(100);
+        break;
+    case 500:
+        _delay_ms(500);
+        break;
+    case 999:
+        _delay_ms(999);
+        break;
+    default:
+        _delay_ms(100);
+        break;
+    }
+    stop();
 }

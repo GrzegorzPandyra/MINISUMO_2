@@ -10,6 +10,24 @@
 #include "string.h"
 #include "ICCM_message_catalog.h"
 
+/* Disable debug logs if AI_DEBUG is not defined during build */
+#ifndef ICCM_DEBUG
+    #undef log_info_P
+    #define log_info_P(str)
+    #undef log_info
+    #define log_info(str)
+    #undef log_warn
+    #define log_warn(str)
+    #undef log_warn_P
+    #define log_warn_P(str)
+    #undef log_err
+    #define log_err(str)
+    #undef log_err_P
+    #define log_err_P(str)
+    #undef log_raw_string
+    #define log_raw_string(str)
+#endif
+
 /* Local macro definitions */
 #define ICCM_RX_BUFFER_SIZE 20
 #define MAX_STRING_LENGTH ICCM_RX_BUFFER_SIZE
@@ -94,7 +112,7 @@ bool static is_rx_buffer_full(void){
  */
 bool to_rx_buffer(const char c){
     if(is_rx_buffer_full()){
-        log_err_P(ICCM_RX_BUFFER_OVERFLOW);
+        log_err_P(PROGMEM_ICCM_RX_BUFFER_OVERFLOW);
         rx_buffer[ICCM_RX_BUFFER_SIZE-1] = NULL_CHAR;
         return false;
     }else{
@@ -138,7 +156,6 @@ static char read_byte_on_pin(){
  * ICCM_RX, ICCM_TX, ICCM_DELAY_US
  */
 void ICCM_init(void){
-    log_info_P(ICCM_INIT);
     /* configure INT0 to activate on rising edge  */
     MCUCR |= SB(ISC01) | SB(ISC00);
     /* enable INT0 */
@@ -160,7 +177,6 @@ void ICCM_init(void){
 void ICCM_send(char *str){
     iccm_status = TX_IN_PROGRESS;
     uint8_t str_len = cstrlen(str);
-    // log_info_P(ICCM_SENDING_DATA, str, str_len);
     
     ICCM_DataFrame_T start_frame = create_frame(STX);
     transmit(start_frame);
@@ -183,7 +199,6 @@ void ICCM_read_rx_buffer(char *buff_out, uint8_t *data_length){
     if(str_len > 0){
         memcpy(buff_out, rx_buffer, str_len);
         *data_length = str_len;
-        log_data_1("%s", rx_buffer);
         ICCM_clear_rx_buffer();
     }
 }

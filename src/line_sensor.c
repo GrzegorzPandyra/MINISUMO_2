@@ -46,13 +46,6 @@ static void update_sensor_status(){
     for(uint8_t i=0; i<NUM_ELEMS(line_sensor_array); i++){
         bool new_status = !(PIND & SB(line_sensor_array[i].pin));
         line_sensor_array[i].status = new_status;
-        // if(line_sensor_array[i].status == new_status){
-        //     line_sensor_array[i].debounce_counter = 0;
-        // } else if(line_sensor_array[i].debounce_counter >= DEBOUNCE_COUNTER_MAX){
-        //     line_sensor_array[i].status = new_status;
-        //     line_sensor_array[i].debounce_counter = 0;
-        // } else
-        //     line_sensor_array[i].debounce_counter++;
     }
 }
 
@@ -64,14 +57,5 @@ uint8_t line_sensor_get_status(){
     uint8_t result = 0;
     for(uint8_t i=0; i<NUM_ELEMS(line_sensor_array); i++)
         force_bit(&result, line_sensor_array[i].status, i);
-
-    // if(result & 0x01)
-    //     log_info("LS1");
-    // if(result & 0x02)
-    //     log_info("LS2");
-    // if(result & 0x04)
-    //     log_info("LS3");
-    // if(result & 0x08)
-    //     log_info("LS4");
     return result;
 }
