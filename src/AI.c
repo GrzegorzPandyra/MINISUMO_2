@@ -30,8 +30,9 @@
     #define log_raw_string(str)
 #endif
 
-#define DS_TRIGGER_LEVEL_1 10
-#define DS_TRIGGER_LEVEL_2 100
+#define DS_TRIGGER_LEVEL_1 400
+#define DS_TRIGGER_LEVEL_2 700
+#define DS_LOCKED_RANGE 200
 #define INIT_DELAY_MS 1000
 #define FORCE_STOP_DELAY_MS 1000
 #define DEFAULT_PWM_VALUE 50
@@ -46,7 +47,7 @@ static void LS1_LS2_triggered(void);
 static void LS2_LS3_triggered(void);
 static void LS3_LS4_triggered(void);
 static void LS4_LS1_triggered(void);
-static void DS_triggered(void);
+static void DS_tracking(void);
 static void DS_target_locked(void);
 static void no_sensor_input(void);
 
@@ -60,7 +61,7 @@ typedef enum AI_Vector_ID_Tag {
     LS2_LS3_TRIGGERED = 6,
     LS3_LS4_TRIGGERED = 12,
     LS4_LS1_TRIGGERED = 9,
-    DS_TRIGGERED = 20,
+    DS_TRACKING = 20,
     DS_TARGET_LOCKED = 21,
     NO_SENSOR_INPUT = 22,
     STOP = 22,
@@ -87,7 +88,7 @@ static const AI_Vector_T AI_VECTORS[] = {
     {LS2_LS3_TRIGGERED, LS2_LS3_triggered},
     {LS3_LS4_TRIGGERED, LS3_LS4_triggered},
     {LS4_LS1_TRIGGERED, LS4_LS1_triggered},
-    {DS_TRIGGERED, DS_triggered},
+    {DS_TRACKING, DS_tracking},
     {DS_TARGET_LOCKED, DS_target_locked},
     {NO_SENSOR_INPUT, no_sensor_input},
     {STOP, stop},
@@ -115,9 +116,6 @@ static const Rotation_Adjustment_Record_T ROTATION_ADJUSTMENT_TABLE[] = {
 
 static AI_Status_T AI_status = AI_IDLE;
 static uint8_t current_PWM = DEFAULT_PWM_VALUE;
-static uint16_t DS1_reading = 0;
-static uint16_t DS2_reading = 0;
-static uint8_t LS_readings = 0;
 
 /**
  * @brief Get the rotation delay coresponding to current PWM value
@@ -209,28 +207,21 @@ static void LS4_LS1_triggered(void){
     variable_delay_ms(get_rotation_delay());
 }
 
-static void DS_triggered(void){
-    // uint16_t initial_ds_reading = distance_sensor_get_status();
-    // ICCM_send(MOTORS_PWM_70);
-    // ICCM_send(MOTORS_TURN_LEFT);
-    // _delay_ms(100);
-    // uint16_t new_ds_reading = distance_sensor_get_status();
-    // if(new_ds_reading > initial_ds_reading){
-    //     log_info("qq");
-    //     DS_target_locked();
-    // } else {
-    //     ICCM_send(MOTORS_TURN_RIGHT);
-    //     _delay_ms(200);
-    //     new_ds_reading = distance_sensor_get_status();
-    //     if(new_ds_reading > initial_ds_reading){
-    //         DS_target_locked();
-    //     } else {
-    //         ICCM_send(MOTORS_TURN_LEFT);
-    //         _delay_ms(100);
-    //         ICCM_send(MOTORS_PWM_50);
-    //         ICCM_send(MOTORS_GO_FORWARD);
-    //     }
-    // }
+static void DS_tracking(void){
+    uint16_t DS1_reading = distance_sensor_get_status(DS1_ID);
+    uint16_t DS2_reading = distance_sensor_get_status(DS2_ID);
+    // log_data_2("DS1=%d DS2=%d",DS1_reading, DS2_reading);
+    if(DS1_reading < DS2_reading){
+        ICCM_send(MOTORS_PWM_50);
+        ICCM_send(MOTORS_TURN_RIGHT);
+        _delay_ms(2);
+        ICCM_send(MOTORS_STOP);
+    } else {
+        ICCM_send(MOTORS_PWM_50);
+        ICCM_send(MOTORS_TURN_LEFT);
+        _delay_ms(2);
+        ICCM_send(MOTORS_STOP);
+    }
 }
 
 static void DS_target_locked(void){
@@ -243,6 +234,16 @@ static void no_sensor_input(void){
     ICCM_send(MOTORS_GO_FORWARD);
 }
 
+static uint16_t abs(uint16_t val){
+    if(val < 0){
+        val *= -1;
+    }
+    return val;
+}
+
+static bool check_target_locked(uint16_t ds1_reading, uint16_t ds2_reading){
+    return ((ds1_reading >= DS_TRIGGER_LEVEL_2 && ds2_reading >= DS_TRIGGER_LEVEL_2) || (abs( (int16_t)ds1_reading - (int16_t)ds2_reading) < DS_LOCKED_RANGE));
+}
 /**********************************************************************
 * Determining the vector 
 ***********************************************************************/
@@ -257,28 +258,31 @@ static AI_Vector_T get_vector_by_ID(AI_Vector_ID_T id){
     return result;
 }
 
-static AI_Vector_T calculate_vector(uint8_t ls_reading, uint16_t ds_reading){
-    // AI_Vector_T result = get_vector_by_ID((AI_Vector_ID_T)ls_reading);
-    AI_Vector_T result = {UNKNOWN, NULL};
+static AI_Vector_T calculate_vector(uint8_t ls_reading, uint16_t ds1_reading, uint16_t ds2_reading){
+    AI_Vector_T result = get_vector_by_ID((AI_Vector_ID_T)ls_reading);
+    // AI_Vector_T result = {UNKNOWN, NULL};
     AI_Status_T previous_AI_status = AI_status;
+
     if(result.id == UNKNOWN){
-        if(ds_reading > DS_TRIGGER_LEVEL_1 && ds_reading < DS_TRIGGER_LEVEL_2){
-            result = get_vector_by_ID(DS_TRIGGERED);
-            AI_status = AI_TRIGGERED;
-        } else if(ds_reading >= DS_TRIGGER_LEVEL_2){
+        if(check_target_locked(ds1_reading, ds2_reading)){
             result = get_vector_by_ID(DS_TARGET_LOCKED);
             AI_status = AI_ATTACK;
+        } else if(ds1_reading > DS_TRIGGER_LEVEL_1 || ds2_reading > DS_TRIGGER_LEVEL_1){
+            result = get_vector_by_ID(DS_TRACKING);
+            AI_status = AI_TRACKING;
         } else {
-            // result = get_vector_by_ID(NO_SENSOR_INPUT);
+            result = get_vector_by_ID(NO_SENSOR_INPUT);
             log_info("no input");
             AI_status = AI_SEARCH;
         }
     } else {
         AI_status = AI_RETURN;
     }
+
     if(previous_AI_status != AI_status){
         print_AI_status();
     }
+
     return result;
 }
 
@@ -293,8 +297,8 @@ void print_AI_status(void){
         case AI_ARMED:
             log_info_P(PROGMEM_AI_STATUS_ARMED);
             break;
-        case AI_TRIGGERED:
-            log_info_P(PROGMEM_AI_STATUS_TRIGGERED);
+        case AI_TRACKING:
+            log_info_P(PROGMEM_AI_STATUS_TRACKING);
         case AI_SEARCH:
             log_info_P(PROGMEM_AI_STATUS_SEARCH);
             break;
@@ -329,12 +333,14 @@ void AI_run(void){
         case AI_SEARCH:
         case AI_ATTACK:
         case AI_RETURN:
-            DS1_reading = distance_sensor_get_status(DS1_ID);
-            DS2_reading = distance_sensor_get_status(DS2_ID);
-            log_data_2("DS1=%d DS2=%d",DS1_reading, DS2_reading);
-            LS_readings = line_sensor_get_status();
-            // const AI_Vector_T vect = calculate_vector(LS_readings, DS_reading);
-            // vect.cbk();
+        case AI_TRACKING:
+            /* Blank statement to allow definition after label */;
+            uint16_t DS1_reading = distance_sensor_get_status(DS1_ID);
+            uint16_t DS2_reading = distance_sensor_get_status(DS2_ID);
+            // log_data_2("DS1=%d DS2=%d",DS1_reading, DS2_reading);
+            uint8_t LS_readings = line_sensor_get_status();
+            const AI_Vector_T vect = calculate_vector(LS_readings, DS1_reading, DS2_reading);
+            vect.cbk();
             _delay_ms(5);
             break;
         case AI_IDLE:
@@ -350,19 +356,19 @@ void AI_init(void){
     AI_status = AI_ARMED;
     log_info_P(PROGMEM_AI_STATUS_ARMED);
     log_info_P(PROGMEM_AI_INIT_IN);
-    // log_raw_string("5..\n");
-    // _delay_ms(INIT_DELAY_MS);
-    // log_raw_string("4..\n");
-    // _delay_ms(INIT_DELAY_MS);
-    // log_raw_string("3..\n");
-    // _delay_ms(INIT_DELAY_MS);
-    // log_raw_string("2..\n");
-    // _delay_ms(INIT_DELAY_MS);
-    // log_raw_string("1..\n");
-    // _delay_ms(INIT_DELAY_MS);
+    log_raw_string("5..\n");
+    _delay_ms(INIT_DELAY_MS);
+    log_raw_string("4..\n");
+    _delay_ms(INIT_DELAY_MS);
+    log_raw_string("3..\n");
+    _delay_ms(INIT_DELAY_MS);
+    log_raw_string("2..\n");
+    _delay_ms(INIT_DELAY_MS);
+    log_raw_string("1..\n");
+    _delay_ms(INIT_DELAY_MS);
     log_info_P(PROGMEM_AI_STATUS_SEARCH);
     AI_status = AI_SEARCH;
-    // ICCM_send(MOTORS_GO_FORWARD);
+    ICCM_send(MOTORS_GO_FORWARD);
     ICCM_send(MOTORS_PWM_50);
 }
 

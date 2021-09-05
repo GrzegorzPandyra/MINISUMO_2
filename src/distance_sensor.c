@@ -7,7 +7,7 @@
 #include "distance_sensor.h"
 #include "serial_tx.h"
 
-#define MAX_NUM_SAMPLES 10
+#define MAX_NUM_SAMPLES 5
 
 /* Local macro-like functions */
 #define SB(x) (1<<(x))          /* set bit   */

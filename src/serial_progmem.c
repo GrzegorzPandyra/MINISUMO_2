@@ -20,9 +20,9 @@ static const char PROGMEM_ICCM_RX_BUFFER_CLEARED_P[]   PROGMEM = "ICCM RX BUFFER
 static const char PROGMEM_AI_STATUS_IDLE_P[]           PROGMEM = "AI status: IDLE";
 static const char PROGMEM_AI_STATUS_ARMED_P[]          PROGMEM = "AI status: ARMED";
 static const char PROGMEM_AI_STATUS_SEARCH_P[]         PROGMEM = "AI status: SEARCH";
-static const char PROGMEM_AI_STATUS_TRIGGERED_P[]      PROGMEM = "AI status: TRIGGERED";
+static const char PROGMEM_AI_STATUS_TRACKING_P[]       PROGMEM = "AI status: TRACKING";
 static const char PROGMEM_AI_STATUS_ATTACK_P[]         PROGMEM = "AI status: ATTACK";
-static const char PROGMEM_AI_STATUS_RETURN_P[]         PROGMEM = "AI status: R2R";
+static const char PROGMEM_AI_STATUS_RETURN_P[]         PROGMEM = "AI status: RETURN";
 static const char PROGMEM_AI_FORCED_STOP_P[]           PROGMEM = "AI forced stop";
 static const char PROGMEM_AI_INIT_IN_P[]               PROGMEM = "AI init in:";
 
@@ -45,7 +45,7 @@ const char* const progmem_string_table[] PROGMEM = {
     PROGMEM_AI_STATUS_IDLE_P,
     PROGMEM_AI_STATUS_ARMED_P,
     PROGMEM_AI_STATUS_SEARCH_P,
-    PROGMEM_AI_STATUS_TRIGGERED_P,
+    PROGMEM_AI_STATUS_TRACKING_P,
     PROGMEM_AI_STATUS_ATTACK_P,
     PROGMEM_AI_STATUS_RETURN_P,
     PROGMEM_AI_FORCED_STOP_P,
